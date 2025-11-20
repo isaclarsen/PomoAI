@@ -1,0 +1,13 @@
+# Java / Spring
+target/
+.mvn/
+mvnw
+mvnw.cmd
+.idea/
+*.class
+
+# Node / React
+node_modules/
+dist/
+.env
+.DS_Store
