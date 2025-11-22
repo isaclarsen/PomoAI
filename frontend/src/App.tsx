@@ -20,7 +20,7 @@ function App() {
       <>
       {currentView === "guestStart" && <GuestStartView onStart={handleStartSession}/>}
       {currentView === "focusTimer" && <FocusTimerView onTimerFinished={() => setCurrentView("questionResult")}/>}
-      {currentView === "questionResult" && <QuestionResultView/>}
+      {currentView === "questionResult" && <QuestionResultView onReset={() => setCurrentView("guestStart")}/>}
       </>
 
   )
