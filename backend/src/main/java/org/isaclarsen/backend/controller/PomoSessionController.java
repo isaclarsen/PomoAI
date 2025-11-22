@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("api/pomo/sessions")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PomoSessionController {
 
     private final PomoSessionService pomoSessionService;
@@ -17,7 +19,7 @@ public class PomoSessionController {
         this.pomoSessionService = pomoSessionService;
     }
 
-    @PostMapping("/api/pomo/sessions/guest/generate")
+    @PostMapping("/guest/generate")
     public CreateSessionResponse startGuestSession(@RequestBody CreateSessionRequest createSessionRequest) {
         return pomoSessionService.createGuestSession(createSessionRequest);
     }

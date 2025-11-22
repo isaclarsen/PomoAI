@@ -1,6 +1,6 @@
 package org.isaclarsen.backend.model.enums;
 
 public enum Status {
-    STARTED,
+    IN_PROGRESS,
     COMPLETED
 }

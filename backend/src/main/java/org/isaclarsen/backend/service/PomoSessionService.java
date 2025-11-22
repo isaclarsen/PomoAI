@@ -22,7 +22,7 @@ public class PomoSessionService {
     public CreateSessionResponse createGuestSession(CreateSessionRequest createSessionRequest) {
         PomoSession pomoSessions = new PomoSession();
         pomoSessions.setTopic(createSessionRequest.topicText());
-        pomoSessions.setStatus(Status.COMPLETED);
+        pomoSessions.setStatus(Status.IN_PROGRESS);
         pomoSessions.setQuestionsJson(
                 "[{\"id\":1, \"text\":\"Vad är skillnaden mellan en klass och ett objekt?\"}, {\"id\":2, \"text\":\"Hur skapar du en funktion i Java?\"}]"
         );
@@ -37,7 +37,7 @@ public class PomoSessionService {
 
         return new CreateSessionResponse(
                 pomoSessions.getSessionId(),
-                Status.COMPLETED,
+                Status.IN_PROGRESS,
                 mockQuestions
         );
     }

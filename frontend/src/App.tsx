@@ -3,18 +3,28 @@ import { useState } from 'react'
 import GuestStartView from './components/GuestStartView';
 import FocusTimerView from './components/FocusTimerView';
 import QuestionResultView from './components/QuestionResultView';
+import { startGuestSession, type QuestionDTO } from './api/pomoApi';
 
-function App() {
+function App({}) {
 
   const [currentView, setCurrentView] = useState<"guestStart" | "focusTimer" | "questionResult">("guestStart");
   const [topic, setTopic] = useState("");
+  const [questions, setQuestions] = useState<QuestionDTO[]>([])
 
-  const handleStartSession = (incomingTopic: string) => {
+  const handleStartSession = async (incomingTopic: string) => {
       setTopic(incomingTopic)
-      setCurrentView("focusTimer")
-  }
+    try {
+      const data = await startGuestSession(incomingTopic);
 
-  {console.log(topic)}
+      setQuestions(data.questions)
+
+      setCurrentView("focusTimer")
+
+    } catch (error) {
+        console.error("Failed to start Pomo Session", error)
+    }
+
+  }
 
   return (
       <>
