@@ -1,4 +1,9 @@
 package org.isaclarsen.backend.model.dto;
 
-public record UpdateSessionResponse(String message) {
-}
+import java.util.List;
+
+public record UpdateSessionResponse(
+        String message,
+        String questions
+)
+{}
