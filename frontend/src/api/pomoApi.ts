@@ -22,8 +22,8 @@ export const startGuestSession = async (topic : string): Promise<SessionResponse
         body: JSON.stringify({ topicText: topic })
     });
     
-        if(!response){
-            throw new Error("Failed to start session")
+        if(!response.ok){
+            throw new Error("Failed to start session");
         }
 
         console.log("Successfully started a Pomo Session!")
@@ -31,7 +31,22 @@ export const startGuestSession = async (topic : string): Promise<SessionResponse
         return response.json();
 }
 
-//Fortsätt
-export const updateGuestSession = async (status : string) => {
-    const url = BASE_URL
+export const updateGuestSessionStatus = async (status : string, sessionId : number) => {
+    const url = BASE_URL + "/" + sessionId
+
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-type": "application/json",
+        },
+        body: JSON.stringify({ status: status })
+    });
+
+    if(!response.ok){
+        throw new Error("Failed to update status on Pomo Session");
+    }
+
+    console.log("Successfully updates status on Pomo Session!")
+
+    return response.json();
 }

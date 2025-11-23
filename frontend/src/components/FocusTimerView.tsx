@@ -7,7 +7,7 @@ interface FocusTimerViewProps {
 
 function FocusTimerView({onTimerFinished} : FocusTimerViewProps){
 
-        const [timeLeft, setTimeLeft] = useState(5)
+        const [timeLeft, setTimeLeft] = useState(15)
 
         useEffect(() => {
             if (!timeLeft) return;
