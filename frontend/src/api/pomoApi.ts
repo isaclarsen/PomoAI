@@ -30,3 +30,8 @@ export const startGuestSession = async (topic : string): Promise<SessionResponse
 
         return response.json();
 }
+
+//Fortsätt
+export const updateGuestSession = async (status : string) => {
+    const url = BASE_URL
+}

@@ -1,9 +1,8 @@
 package org.isaclarsen.backend.service;
 
+import org.isaclarsen.backend.exception.ResourceNotFoundException;
 import org.isaclarsen.backend.model.PomoSession;
-import org.isaclarsen.backend.model.dto.CreateSessionRequest;
-import org.isaclarsen.backend.model.dto.CreateSessionResponse;
-import org.isaclarsen.backend.model.dto.QuestionsDTO;
+import org.isaclarsen.backend.model.dto.*;
 import org.isaclarsen.backend.model.enums.Status;
 import org.isaclarsen.backend.repository.PomoSessionRepository;
 import org.springframework.stereotype.Service;
@@ -39,6 +38,26 @@ public class PomoSessionService {
                 pomoSessions.getSessionId(),
                 Status.IN_PROGRESS,
                 mockQuestions
+        );
+    }
+
+    public UpdateSessionResponse updateSession(Long sessionId, UpdateSessionRequest updateSessionRequest) {
+        PomoSession pomoToUpdate = pomoSessionRepository.findById(sessionId)
+                .orElseThrow(() -> {
+                    String message = "Session with id " + sessionId + " not found";
+                    return new ResourceNotFoundException(message);
+        });
+
+        try {
+            Status newStatus = Status.valueOf(updateSessionRequest.status());
+            pomoToUpdate.setStatus(newStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status provided: " + updateSessionRequest.status());
+        }
+
+        pomoSessionRepository.save(pomoToUpdate);
+        return new UpdateSessionResponse(
+                "Session with ID: " + sessionId +  " successfully updated. Generating questions process begins..."
         );
     }
 
