@@ -9,7 +9,6 @@ function GuestStartView({onStart} : GuestStartViewProps) {
     const [topic, setTopic] = useState("");
 
     const handleStartClick = () => {
-        console.log(topic);
         onStart(topic);
     }
 

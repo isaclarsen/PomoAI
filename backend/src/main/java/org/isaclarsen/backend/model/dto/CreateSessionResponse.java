@@ -6,8 +6,8 @@ import java.util.List;
 
 public record CreateSessionResponse(
         Long sessionId,
-        Status status,
-        List<QuestionsDTO> questions
+        int durationTime,
+        Status status
 
 )
 { }

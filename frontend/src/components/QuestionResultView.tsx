@@ -1,14 +1,11 @@
+import type { QuestionDTO } from "../api/pomoApi";
+
 interface QuestionResultViewProps {
     onReset: () => void;
+    questions: QuestionDTO[];
 }
 
-function QuestionResultView({ onReset }: QuestionResultViewProps) {
-
-    const mockQuestions = [
-        { id: 1, text: "Vad är skillnaden mellan en klass och ett objekt i Java?" },
-        { id: 2, text: "Förklara begreppet 'State' i React med egna ord." },
-        { id: 3, text: "Varför ska man inte ändra state direkt utan använda en setter?" }
-    ];
+function QuestionResultView({ onReset, questions }: QuestionResultViewProps) {
 
     return (
         <div>
@@ -17,7 +14,7 @@ function QuestionResultView({ onReset }: QuestionResultViewProps) {
 
             <div>
                 
-                {mockQuestions.map((question) => (
+                {questions.map((question : QuestionDTO) => (
                     <div key={question.id}>{question.text}</div>
                 ))}
 

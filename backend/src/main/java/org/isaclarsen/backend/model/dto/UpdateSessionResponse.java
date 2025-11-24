@@ -4,6 +4,6 @@ import java.util.List;
 
 public record UpdateSessionResponse(
         String message,
-        String questions
+        List<QuestionsDTO> questions
 )
 {}

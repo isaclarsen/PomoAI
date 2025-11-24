@@ -11,6 +11,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,32 +21,24 @@ public class PomoSessionService {
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
 
-    public PomoSessionService(PomoSessionRepository pomoSessionRepository, ChatClient.Builder chatClientBuilder) {
+    public PomoSessionService(PomoSessionRepository pomoSessionRepository, ChatClient.Builder chatClientBuilder, ObjectMapper objectMapper) {
         this.pomoSessionRepository = pomoSessionRepository;
         this.chatClient = chatClientBuilder.build();
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     public CreateSessionResponse createGuestSession(CreateSessionRequest createSessionRequest) {
-        PomoSession pomoSessions = new PomoSession();
-        pomoSessions.setTopic(createSessionRequest.topicText());
-        pomoSessions.setStatus(Status.IN_PROGRESS);
-        pomoSessions.setQuestionsJson(
-                "[{\"id\":1, \"text\":\"Vad är skillnaden mellan en klass och ett objekt?\"}, {\"id\":2, \"text\":\"Hur skapar du en funktion i Java?\"}]"
-        );
-        pomoSessions.setDurationMinutes(25);
+        PomoSession pomoSession = new PomoSession();
+        pomoSession.setTopic(createSessionRequest.topicText());
+        pomoSession.setStatus(Status.IN_PROGRESS);
+        pomoSession.setDurationMinutes(25);
 
-        List<QuestionsDTO> mockQuestions = List.of(
-                new QuestionsDTO(1L, "Vad är skillnaden mellan en klass och ett objekt?"),
-                new QuestionsDTO(2L, "Hur skapar du en funktion i Java?")
-        );
-
-        pomoSessionRepository.save(pomoSessions);
+        pomoSessionRepository.save(pomoSession);
 
         return new CreateSessionResponse(
-                pomoSessions.getSessionId(),
-                Status.IN_PROGRESS,
-                mockQuestions
+                pomoSession.getSessionId(),
+                pomoSession.getDurationMinutes(),
+                pomoSession.getStatus()
         );
     }
 
@@ -56,11 +49,13 @@ public class PomoSessionService {
                     return new ResourceNotFoundException(message);
                 });
 
+        List<QuestionsDTO> aiQuestions = new ArrayList<>();
+
         try {
             Status newStatus = Status.valueOf(request.status());
             pomoToUpdate.setStatus(newStatus);
 
-            //When Pomo timer runs out, call AI and generate questions
+            //When status is completed, call AI and generate questions
             if (newStatus.equals(Status.COMPLETED)) {
 
                 String promptText = """
@@ -78,8 +73,8 @@ public class PomoSessionService {
 
                 System.out.println("Sending prompt to AI...");
 
-                //Send the prompt to AI and convert to QuestionsDTO object
-                List<QuestionsDTO> aiQuestions = chatClient.prompt()
+                //Send the prompt to AI and convert to QuestionsDTO object to validate structure
+                aiQuestions = chatClient.prompt()
                         .user(promptText)
                         .call()
                         .entity(new ParameterizedTypeReference<List<QuestionsDTO>>() {
@@ -90,7 +85,6 @@ public class PomoSessionService {
                 pomoToUpdate.setQuestionsJson(jsonString);
             }
 
-
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid status provided: " + request.status());
         } catch (JsonProcessingException e) {
@@ -100,7 +94,7 @@ public class PomoSessionService {
         pomoSessionRepository.save(pomoToUpdate);
         return new UpdateSessionResponse(
                 "Session with ID: " + sessionId + " successfully updated status to COMPLETED",
-                pomoToUpdate.getQuestionsJson()
+                aiQuestions
         );
     }
 

@@ -17,7 +17,6 @@ function App({}) {
 
     try {
       const data = await startGuestSession(incomingTopic);
-      setQuestions(data.questions)
       setSessionId(data.sessionId)
       setCurrentView("focusTimer")
     } catch (error) {
@@ -27,18 +26,18 @@ function App({}) {
 
   const handleTimerFinished = async (sessionId : number) => {
     try {
-      await updateGuestSessionStatus("COMPLETED", sessionId)
+      setQuestions(await updateGuestSessionStatus("COMPLETED", sessionId));
       setCurrentView("questionResult")
     } catch (error) {
       console.error("Failed to update status on Pomo Session", error)
     }
   }
-
+  
   return (
       <>
       {currentView === "guestStart" && <GuestStartView onStart={handleStartSession}/>}
       {currentView === "focusTimer" && <FocusTimerView onTimerFinished={() => handleTimerFinished(sessionId)}/>}
-      {currentView === "questionResult" && <QuestionResultView onReset={() => setCurrentView("guestStart")}/>}
+      {currentView === "questionResult" && <QuestionResultView questions={questions} onReset={() => setCurrentView("guestStart")}/>}
       </>
 
   )

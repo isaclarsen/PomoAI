@@ -31,7 +31,7 @@ export const startGuestSession = async (topic : string): Promise<SessionResponse
         return response.json();
 }
 
-export const updateGuestSessionStatus = async (status : string, sessionId : number) => {
+export const updateGuestSessionStatus = async (status : string, sessionId : number) : Promise<QuestionDTO[]> => {
     const url = BASE_URL + "/" + sessionId
 
     const response = await fetch(url, {
@@ -46,7 +46,7 @@ export const updateGuestSessionStatus = async (status : string, sessionId : numb
         throw new Error("Failed to update status on Pomo Session");
     }
 
-    console.log("Successfully updates status on Pomo Session!")
+    const result = await response.json();
 
-    return response.json();
+    return result.questions;
 }
