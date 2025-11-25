@@ -1,6 +1,8 @@
 export interface QuestionDTO{
     id: number,
     text: string
+    options: string[]
+    correctAnswer: string
 }
 
 export interface SessionResponse{

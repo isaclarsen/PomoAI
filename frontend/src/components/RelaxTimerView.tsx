@@ -7,7 +7,7 @@ interface FocusTimerViewProps {
 
 function RelaxTimerView({onTimerFinished} : FocusTimerViewProps){
 
-        const [timeLeft, setTimeLeft] = useState(15)
+        const [timeLeft, setTimeLeft] = useState(30)
 
         useEffect(() => {
             if (!timeLeft) return;
@@ -41,6 +41,7 @@ function RelaxTimerView({onTimerFinished} : FocusTimerViewProps){
         <div>
             <h2>Bra jobbat! Ta en liten paus!</h2>
             <h3>{formatTime(timeLeft)}</h3>
+            <p>Tips: töm diskmaskinen 🤠</p>
             <button onClick={onTimerFinished}>
                 Skippa timer (dev)
             </button>

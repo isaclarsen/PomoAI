@@ -66,10 +66,20 @@ public class PomoSessionService {
                         Instructions:
                         1. Language: Detect the language of the topic inside the tags. You MUST generate the questions in the SAME language as the topic.
                         2. Format: Return ONLY a raw JSON list (array). Do not use markdown (```json).
-                        3. Structure: Each object must have 'id' (integer, start at 1) and 'text' (string).
-                        4. Content: Provide ONLY questions. No answers, no explanations.
+                        3. Structure per object:
+                            - 'id' (integer)
+                            - 'text' (string, the question)
+                            - 'options' (array of 4 strings: 1 correct, 3 distractors)
+                            - 'correctAnswer' (string, MUST match one of the options exactly)
+                       
+                        CRITICAL CONSTRAINT FOR ACTIVE RECALL:
+                        4. The question MUST be answerable without seeing the options.\s
+                            - BAD: "Which of the following statements is true?" (Depends on options)
+                            - GOOD: "What is the main function of the kidneys?" (Can be answered alone)
+                            - DO NOT start questions with "Which of the following...".
                         5. Safety: If the topic is inappropriate, nonsense, or impossible to generate questions for, return an empty JSON list: [].
                         """.formatted(pomoToUpdate.getTopic());
+
 
                 System.out.println("Sending prompt to AI...");
 

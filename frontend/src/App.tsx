@@ -28,6 +28,7 @@ function App({}) {
   const handleTimerFinished = async (sessionId : number) => {
     try {
       setCurrentView("relaxTimer")
+      setQuestions([]);
       setQuestions(await updateGuestSessionStatus("COMPLETED", sessionId));
     } catch (error) {
       console.error("Failed to update status on Pomo Session", error)
