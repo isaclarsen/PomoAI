@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import LoginView from './LoginView';
+import type { User } from 'firebase/auth';
 
 interface GuestStartViewProps {
     onStart: (topic:string) => void;
+    onLogin: (user: User) => void;
 }
 
-function GuestStartView({onStart} : GuestStartViewProps) {
+function GuestStartView({onStart, onLogin} : GuestStartViewProps) {
 
     const [topic, setTopic] = useState("");
 
@@ -21,6 +24,8 @@ function GuestStartView({onStart} : GuestStartViewProps) {
             <button onClick={handleStartClick}>
                 Starta Pomo
             </button>
+
+            <LoginView onLoginSuccess={onLogin}></LoginView>
         </div>
     )
 }

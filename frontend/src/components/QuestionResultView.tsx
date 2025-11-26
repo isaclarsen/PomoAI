@@ -42,6 +42,7 @@ function QuestionResultView({ onReset, questions }: QuestionResultViewProps) {
         setCurrentIndex(currentIndex + 1)
     };
 
+    //If user skips relax time the questions api-call wont be done
     if(!questions || questions.length === 0){
         return(
             <div>
