@@ -3,7 +3,7 @@ import { useState } from 'react'
 import GuestStartView from './components/GuestStartView';
 import FocusTimerView from './components/FocusTimerView';
 import QuestionResultView from './components/QuestionResultView';
-import { startGuestSession, updateGuestSessionStatus, type QuestionDTO } from './api/pomoApi';
+import { startGuestSession, syncUser, updateGuestSessionStatus, type QuestionDTO } from './api/pomoApi';
 import RelaxTimerView from './components/RelaxTimerView';
 import type { User } from 'firebase/auth';
 
@@ -17,8 +17,16 @@ function App({}) {
 
   const handleLoginSuccess = async (loggedInUser: User) => {
     console.log("User successfully logged in")
-    console.log(await loggedInUser.getIdToken())
     setUser(loggedInUser);
+    const token = await loggedInUser.getIdToken();
+    const email = loggedInUser.email || "";
+
+    if(!email){
+      console.error("No email found")
+    }
+
+    const dbUser = await syncUser(token, email)
+    console.log("User synced with DB: " + dbUser)
     setCurrentView("guestStart");
   }
 

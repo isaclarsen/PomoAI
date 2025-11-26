@@ -3,6 +3,8 @@ package org.isaclarsen.backend.model;
 import jakarta.persistence.*;
 import org.isaclarsen.backend.model.enums.EducationLevel;
 
+import java.time.LocalDateTime;
+
 @Entity
 public class User {
     @Id
@@ -22,12 +24,16 @@ public class User {
     @Column(unique = true)
     private String displayName;
 
-    public User(Long userId, String firebaseId, String email, EducationLevel educationLevel, String displayName) {
+    @Column()
+    private LocalDateTime lastLogin;
+
+    public User(Long userId, String firebaseId, String email, EducationLevel educationLevel, String displayName,  LocalDateTime lastLogin) {
         this.userId = userId;
         this.firebaseId = firebaseId;
         this.email = email;
         this.educationLevel = educationLevel;
         this.displayName = displayName;
+        this.lastLogin = lastLogin;
     }
 
     public User() {}
@@ -70,5 +76,11 @@ public class User {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+    public LocalDateTime getLastLogin() {
+        return lastLogin;
+    }
+    public void setLastLogin(LocalDateTime lastLogin) {
+        this.lastLogin = lastLogin;
     }
 }

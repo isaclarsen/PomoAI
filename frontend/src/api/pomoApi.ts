@@ -11,10 +11,17 @@ export interface SessionResponse{
     status: string
 }
 
-const BASE_URL = "http://localhost:8080/api/pomo/sessions";
+export interface User{
+    userId: number,
+    firebaseId: string,
+    email: string,
+    educationLevel?: string;
+}
+
+const BASE_URL = "http://localhost:8080/api";
 
 export const startGuestSession = async (topic : string): Promise<SessionResponse> => {
-    const url = BASE_URL + "/guest/generate"
+    const url = BASE_URL + "/guest/sessions/generate"
 
     const response = await fetch(url, {
         method: "POST",
@@ -34,7 +41,7 @@ export const startGuestSession = async (topic : string): Promise<SessionResponse
 }
 
 export const updateGuestSessionStatus = async (status : string, sessionId : number) : Promise<QuestionDTO[]> => {
-    const url = BASE_URL + "/" + sessionId
+    const url = BASE_URL + "/guest/sessions/" + sessionId
 
     const response = await fetch(url, {
         method: "PUT",
@@ -51,4 +58,25 @@ export const updateGuestSessionStatus = async (status : string, sessionId : numb
     const result = await response.json();
 
     return result.questions;
+}
+
+export const syncUser = async(token : string, email : string) : Promise<User> => {
+    const url = BASE_URL + "/user/auth"
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({email : email})
+    });
+
+    if(!response.ok){
+        throw new Error("Failed to fetch user")
+    }
+
+    const result = await response.json()
+
+    return result;
 }

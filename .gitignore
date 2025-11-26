@@ -1,13 +1,39 @@
-# Java / Spring
-target/
-.mvn/
-mvnw
-mvnw.cmd
-.idea/
-*.class
+# --- SÄKERHET (RÖR EJ!) ---
+service-account.json
+src/main/resources/service-account.json
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Node / React
+# --- BACKEND (Java/Maven) ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+*.class
+*.log
+*.ctxt
+.mtj.tmp/
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# --- FRONTEND (Node/React) ---
 node_modules/
 dist/
-.env
+build/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+
+# --- IDE & OS (Personliga inställningar) ---
+.idea/
+*.iml
+.vscode/
 .DS_Store
+Thumbs.db

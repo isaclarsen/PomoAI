@@ -8,6 +8,7 @@ import org.isaclarsen.backend.model.dto.*;
 import org.isaclarsen.backend.model.enums.Status;
 import org.isaclarsen.backend.repository.PomoSessionRepository;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class PomoSessionService {
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
 
+    @Autowired
     public PomoSessionService(PomoSessionRepository pomoSessionRepository, ChatClient.Builder chatClientBuilder, ObjectMapper objectMapper) {
         this.pomoSessionRepository = pomoSessionRepository;
         this.chatClient = chatClientBuilder.build();
