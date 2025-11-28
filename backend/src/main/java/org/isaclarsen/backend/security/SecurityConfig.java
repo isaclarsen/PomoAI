@@ -20,8 +20,6 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private static final String[] WHITELISTED_API_ENDPOINTS = { "/user", "/user/refresh-token" };
-
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
 
     public SecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter) {

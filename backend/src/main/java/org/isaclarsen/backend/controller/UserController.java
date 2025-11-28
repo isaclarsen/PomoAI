@@ -26,7 +26,7 @@ public class UserController {
 
     @PostMapping("/auth")
     public User syncUser(@AuthenticationPrincipal String firebaseId, @RequestBody AuthRequest authRequest) {
-        return authService.syncUser(firebaseId, authRequest.email());
+        return authService.syncUser(firebaseId, authRequest.email(), authRequest.displayName(), authRequest.educationLevel());
     }
 
 

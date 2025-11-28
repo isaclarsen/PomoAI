@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import LoginView from './LoginView';
-import type { User } from 'firebase/auth';
+import LoginView, { type UserRegistrationData } from './LoginView';
 
 interface GuestStartViewProps {
     onStart: (topic:string) => void;
-    onLogin: (user: User) => void;
+    onLogin: (UserRegistrationData : UserRegistrationData) => void;
 }
 
 function GuestStartView({onStart, onLogin} : GuestStartViewProps) {

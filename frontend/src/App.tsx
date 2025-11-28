@@ -3,6 +3,7 @@ import { useState } from 'react'
 import GuestStartView from './components/GuestStartView';
 import FocusTimerView from './components/FocusTimerView';
 import QuestionResultView from './components/QuestionResultView';
+import LoginView, { type UserRegistrationData } from './components/LoginView';
 import { startGuestSession, syncUser, updateGuestSessionStatus, type QuestionDTO } from './api/pomoApi';
 import RelaxTimerView from './components/RelaxTimerView';
 import type { User } from 'firebase/auth';
@@ -15,19 +16,25 @@ function App({}) {
   const [questions, setQuestions] = useState<QuestionDTO[]>([]);
   const [sessionId, setSessionId] = useState<number>(0);
 
-  const handleLoginSuccess = async (loggedInUser: User) => {
-    console.log("User successfully logged in")
-    setUser(loggedInUser);
-    const token = await loggedInUser.getIdToken();
-    const email = loggedInUser.email || "";
-
-    if(!email){
-      console.error("No email found")
+  const handleLoginSuccess = async (data: UserRegistrationData) => {
+    const {fireBaseUser, displayName, educationLevel} = data;
+    
+    if(!fireBaseUser){
+      console.error("No user found in fireBase")
     }
 
-    const dbUser = await syncUser(token, email)
-    console.log("User synced with DB: " + dbUser)
-    setCurrentView("guestStart");
+    try{
+      const token = await fireBaseUser.getIdToken();
+      const email = fireBaseUser.email || "";
+
+      await syncUser(token, email, displayName, educationLevel)
+  
+      setUser(fireBaseUser);
+      setCurrentView("guestStart");
+    }catch(error){
+      console.error("Something went wrong")
+    }
+
   }
 
   const handleStartSession = async (incomingTopic: string) => {

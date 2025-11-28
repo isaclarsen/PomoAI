@@ -15,6 +15,7 @@ export interface User{
     userId: number,
     firebaseId: string,
     email: string,
+    displayName?: string
     educationLevel?: string;
 }
 
@@ -60,7 +61,7 @@ export const updateGuestSessionStatus = async (status : string, sessionId : numb
     return result.questions;
 }
 
-export const syncUser = async(token : string, email : string) : Promise<User> => {
+export const syncUser = async(token : string, email : string, displayName: string, educationLevel: string) : Promise<User> => {
     const url = BASE_URL + "/user/auth"
 
     const response = await fetch(url, {
@@ -69,7 +70,11 @@ export const syncUser = async(token : string, email : string) : Promise<User> =>
             "Content-type": "application/json",
             "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({email : email})
+        body: JSON.stringify({
+            email,
+            displayName,
+            educationLevel
+        })
     });
 
     if(!response.ok){
