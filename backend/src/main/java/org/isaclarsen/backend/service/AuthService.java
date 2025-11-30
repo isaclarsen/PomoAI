@@ -20,17 +20,19 @@ public class AuthService {
     }
 
     public User syncUser(String firebaseID, String email, String displayName, String educationLevel) {
-        return userRepository.findByFirebaseId(firebaseID)
-                .orElseGet(() -> {
-                    System.out.println("New user detected: " + firebaseID + email);
-                    User newUser = new User();
-                    newUser.setEmail(email);
-                    newUser.setFirebaseId(firebaseID);
-                    newUser.setDisplayName(displayName);
-                    newUser.setEducationLevel(educationLevel);
-                    newUser.setLastLogin(LocalDateTime.now());
-                    return userRepository.save(newUser);
-                });
+        User existingUser = userRepository.findByFirebaseId(firebaseID).orElse(null);
+        if (existingUser == null) {
+            System.out.println("New user detected: " + firebaseID + email);
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setFirebaseId(firebaseID);
+            newUser.setDisplayName(displayName);
+            newUser.setEducationLevel(educationLevel);
+            newUser.setLastLogin(LocalDateTime.now());
+            return userRepository.save(newUser);
+        } else {
+            existingUser.setLastLogin(LocalDateTime.now());
+            return userRepository.save(existingUser);
+        }
     }
-
 }
