@@ -1,6 +1,6 @@
 import { signInWithPopup, type User } from "firebase/auth";
 import { auth, provider } from "../firebaseConfig";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { syncUser } from "../api/pomoApi";
 
 interface LoginViewProps {
@@ -73,13 +73,16 @@ function LoginView({ onLoginSuccess } : LoginViewProps) {
         }
     }
 
+    useEffect(() => {
+        handleLogin();
+    }, [])
+
     return(
         <>
             {currentView === "login" && 
                 <div>   
-                    <button onClick={handleLogin}>
-                        Sign in
-                    </button>
+                    <p>Opening login...</p>
+                    <button onClick={handleLogin}>Open login again</button>
                 </div>
             }
 

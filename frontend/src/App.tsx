@@ -1,17 +1,18 @@
 import './App.css'
 import { useState } from 'react'
-import GuestStartView from './components/GuestStartView';
+import GuestStartView from './components/HomePage';
 import FocusTimerView from './components/FocusTimerView';
 import QuestionResultView from './components/QuestionResultView';
 import LoginView, { type UserRegistrationData } from './components/LoginView';
 import { startGuestSession, syncUser, updateGuestSessionStatus, type QuestionDTO } from './api/pomoApi';
 import RelaxTimerView from './components/RelaxTimerView';
 import type { User } from 'firebase/auth';
+import HomePage from './components/HomePage';
 
 function App({}) {
 
   const [user, setUser] = useState<User | null>(null)
-  const [currentView, setCurrentView] = useState<"guestStart" | "focusTimer" | "relaxTimer" | "questionResult" | "login">("guestStart");
+  const [currentView, setCurrentView] = useState<"homePage" | "focusTimer" | "relaxTimer" | "questionResult" | "login">("homePage");
   const [topic, setTopic] = useState("");
   const [questions, setQuestions] = useState<QuestionDTO[]>([]);
   const [sessionId, setSessionId] = useState<number>(0);
@@ -30,7 +31,7 @@ function App({}) {
       await syncUser(token, email, displayName, educationLevel)
   
       setUser(fireBaseUser);
-      setCurrentView("guestStart");
+      setCurrentView("homePage");
     }catch(error){
       console.error("Something went wrong")
     }
@@ -65,10 +66,22 @@ function App({}) {
   
   return (
     <>
-      {currentView === "guestStart" && <GuestStartView onStart={handleStartSession} onLogin={handleLoginSuccess}/>}
+      {currentView === "homePage" && (
+          <HomePage
+              onStart={handleStartSession}
+              onLoginClick={() => setCurrentView("login")}
+              />
+            )}
+
+      {currentView === "login" && (
+        <LoginView onLoginSuccess={handleLoginSuccess}/>
+      )}
+
+
+
       {currentView === "focusTimer" && <FocusTimerView onTimerFinished={() => handleTimerFinished(sessionId)}/>}
       {currentView === "relaxTimer" && <RelaxTimerView onTimerFinished={() => handleRelaxTimerFinished()}/>}
-      {currentView === "questionResult" && <QuestionResultView questions={questions} onReset={() => setCurrentView("guestStart")}/>}
+      {currentView === "questionResult" && <QuestionResultView questions={questions} onReset={() => setCurrentView("homePage")}/>}
     </>
 
   )
