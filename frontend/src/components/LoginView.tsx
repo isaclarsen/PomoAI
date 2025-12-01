@@ -1,4 +1,4 @@
-import { signInWithPopup, type User } from "firebase/auth";
+import { signInWithPopup, updateProfile, type User } from "firebase/auth";
 import { auth, provider } from "../firebaseConfig";
 import { useEffect, useState } from "react";
 import { syncUser } from "../api/pomoApi";
@@ -45,6 +45,7 @@ function LoginView({ onLoginSuccess } : LoginViewProps) {
                 //User data not complete, onboarding process starts
                 setCurrentView("displayName");
             }else{
+
                 onLoginSuccess({
                     fireBaseUser: result.user,
                     displayName: dbUser.displayName,
@@ -61,28 +62,33 @@ function LoginView({ onLoginSuccess } : LoginViewProps) {
         setCurrentView("educationLevel");
     }
     
-    const handleFinalSubmit = () => {
+    const handleFinalSubmit = async () => {
         if (fireBaseUser){
-            onLoginSuccess({
-                fireBaseUser: fireBaseUser,
-                displayName: displayName,
-                educationLevel: educationLevel
+
+            try{
+                await updateProfile(fireBaseUser, {
+                    displayName: displayName
+                });
+
+
+                onLoginSuccess({
+                    fireBaseUser: fireBaseUser,
+                    displayName: displayName,
+                    educationLevel: educationLevel
+                });
+
+                }catch(error){
+                    console.error("Could not update profile name")
                 }
-            )
             setCurrentView("welcomeView")
         }
     }
-
-    useEffect(() => {
-        handleLogin();
-    }, [])
 
     return(
         <>
             {currentView === "login" && 
                 <div>   
-                    <p>Opening login...</p>
-                    <button onClick={handleLogin}>Open login again</button>
+                    <button onClick={handleLogin}>Login with Google</button>
                 </div>
             }
 

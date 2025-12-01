@@ -1,13 +1,13 @@
 import './App.css'
-import { useState } from 'react'
-import GuestStartView from './components/HomePage';
+import { useEffect, useState } from 'react'
 import FocusTimerView from './components/FocusTimerView';
 import QuestionResultView from './components/QuestionResultView';
 import LoginView, { type UserRegistrationData } from './components/LoginView';
 import { startGuestSession, syncUser, updateGuestSessionStatus, type QuestionDTO } from './api/pomoApi';
 import RelaxTimerView from './components/RelaxTimerView';
-import type { User } from 'firebase/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import HomePage from './components/HomePage';
+import { auth } from './firebaseConfig';
 
 function App({}) {
 
@@ -16,6 +16,32 @@ function App({}) {
   const [topic, setTopic] = useState("");
   const [questions, setQuestions] = useState<QuestionDTO[]>([]);
   const [sessionId, setSessionId] = useState<number>(0);
+  const [isAuthChecking, setIsAuthChecking] = useState(true)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async( firebaseUser) => {
+        if(firebaseUser){
+          console.log("User found: " + firebaseUser.email);
+
+          try{
+            const token = await firebaseUser.getIdToken();
+            const email = firebaseUser.email || "";
+
+            await syncUser(token, email, "", "")
+
+            setUser(firebaseUser);
+            setCurrentView("homePage");
+          }catch(error){
+            console.log("Failed to get user session from backend", error)
+          }
+        }else{
+          console.log("No user found")
+          setUser(null);
+        }
+        setIsAuthChecking(false)
+    });
+    return () => unsubscribe()
+  }, [])
 
   const handleLoginSuccess = async (data: UserRegistrationData) => {
     const {fireBaseUser, displayName, educationLevel} = data;
@@ -63,6 +89,14 @@ function App({}) {
   const handleRelaxTimerFinished = async () => {
     setCurrentView("questionResult")
   }
+
+  if(isAuthChecking){
+    return (
+      <div>
+        <h2>PomoAI is loading...</h2>
+      </div>
+    )
+  }
   
   return (
     <>
@@ -70,15 +104,10 @@ function App({}) {
           <HomePage
               onStart={handleStartSession}
               onLoginClick={() => setCurrentView("login")}
+              user={user}
               />
             )}
-
-      {currentView === "login" && (
-        <LoginView onLoginSuccess={handleLoginSuccess}/>
-      )}
-
-
-
+      {currentView === "login" && <LoginView onLoginSuccess={handleLoginSuccess}></LoginView>}
       {currentView === "focusTimer" && <FocusTimerView onTimerFinished={() => handleTimerFinished(sessionId)}/>}
       {currentView === "relaxTimer" && <RelaxTimerView onTimerFinished={() => handleRelaxTimerFinished()}/>}
       {currentView === "questionResult" && <QuestionResultView questions={questions} onReset={() => setCurrentView("homePage")}/>}
