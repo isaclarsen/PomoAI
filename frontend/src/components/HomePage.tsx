@@ -4,10 +4,12 @@ import GuestSessionStarter from './GuestSessionStarter';
 interface HomePageProps {
     onStart: (topic:string) => void;
     onLoginClick: () => void;
+    onLogOutClick: () => void;
     user: User | null;
 }
 
-function HomePage({onStart, onLoginClick, user} : HomePageProps) {
+
+function HomePage({onStart, onLoginClick, onLogOutClick, user} : HomePageProps) {
 
     return (
         <div>
@@ -16,6 +18,7 @@ function HomePage({onStart, onLoginClick, user} : HomePageProps) {
                 {user ? (
                     <div>
                         <span>Welcome {user.displayName}!</span>
+                        <button onClick={onLogOutClick}>Log out</button>
                     </div>
                 ) : (                    
                     <button onClick={onLoginClick}>

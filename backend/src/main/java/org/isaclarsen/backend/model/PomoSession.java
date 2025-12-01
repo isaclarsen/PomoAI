@@ -5,6 +5,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.isaclarsen.backend.model.enums.Status;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class PomoSession {
@@ -21,7 +22,7 @@ public class PomoSession {
 
     @Column
     @CreationTimestamp
-    private LocalDate timestamp;
+    private LocalDateTime timestamp;
 
     @Column(columnDefinition = "TEXT")
     private String questionsJson;
@@ -33,7 +34,7 @@ public class PomoSession {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public PomoSession(Long sessionId, User user, int durationMinutes, LocalDate timestamp, String questionsJson, String topic, Status status) {
+    public PomoSession(Long sessionId, User user, int durationMinutes, LocalDateTime timestamp, String questionsJson, String topic, Status status) {
         this.sessionId = sessionId;
         this.user = user;
         this.durationMinutes = durationMinutes;
@@ -69,11 +70,11 @@ public class PomoSession {
         this.durationMinutes = durationMinutes;
     }
 
-    public LocalDate getTimestamp() {
+    public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDate timestamp) {
+    public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
 

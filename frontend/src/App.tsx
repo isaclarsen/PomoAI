@@ -5,7 +5,7 @@ import QuestionResultView from './components/QuestionResultView';
 import LoginView, { type UserRegistrationData } from './components/LoginView';
 import { startGuestSession, syncUser, updateGuestSessionStatus, type QuestionDTO } from './api/pomoApi';
 import RelaxTimerView from './components/RelaxTimerView';
-import { onAuthStateChanged, type User } from 'firebase/auth';
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import HomePage from './components/HomePage';
 import { auth } from './firebaseConfig';
 
@@ -47,21 +47,30 @@ function App({}) {
     const {fireBaseUser, displayName, educationLevel} = data;
     
     if(!fireBaseUser){
-      console.error("No user found in fireBase")
+      console.error("No user found in fireBase");
     }
 
     try{
       const token = await fireBaseUser.getIdToken();
       const email = fireBaseUser.email || "";
 
-      await syncUser(token, email, displayName, educationLevel)
+      await syncUser(token, email, displayName, educationLevel);
   
       setUser(fireBaseUser);
       setCurrentView("homePage");
     }catch(error){
-      console.error("Something went wrong")
+      console.error("Something went wrong");
     }
 
+  }
+
+  const handleLogOut = async () => {
+    try{
+      await signOut(auth);
+      setCurrentView("homePage");
+    }catch(error){
+      console.log("Error logging out: " + error);
+    }
   }
 
   const handleStartSession = async (incomingTopic: string) => {
@@ -104,6 +113,7 @@ function App({}) {
           <HomePage
               onStart={handleStartSession}
               onLoginClick={() => setCurrentView("login")}
+              onLogOutClick={handleLogOut}
               user={user}
               />
             )}

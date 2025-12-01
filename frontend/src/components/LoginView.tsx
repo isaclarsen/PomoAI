@@ -1,6 +1,6 @@
 import { signInWithPopup, updateProfile, type User } from "firebase/auth";
 import { auth, provider } from "../firebaseConfig";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { syncUser } from "../api/pomoApi";
 
 interface LoginViewProps {
