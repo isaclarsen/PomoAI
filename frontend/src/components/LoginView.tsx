@@ -1,6 +1,7 @@
 import { signInWithPopup, type User } from "firebase/auth";
 import { auth, provider } from "../firebaseConfig";
 import { useState } from "react";
+import { syncUser } from "../api/pomoApi";
 
 interface LoginViewProps {
     onLoginSuccess: (data: UserRegistrationData) => void;
@@ -32,9 +33,24 @@ function LoginView({ onLoginSuccess } : LoginViewProps) {
 
     const handleLogin = async () => {
         try {
-            const result = await signInWithPopup(auth, provider)
+            const result = await signInWithPopup(auth, provider);
+            const token = await result.user.getIdToken();
+            const email = result.user.email || "";
+
+            const dbUser = await syncUser(token, email, "", "")
+
             setFireBaseUser(result.user);
-            setCurrentView("displayName");
+
+            if(!dbUser.displayName || !dbUser.educationLevel){
+                //User data not complete, onboarding process starts
+                setCurrentView("displayName");
+            }else{
+                onLoginSuccess({
+                    fireBaseUser: result.user,
+                    displayName: dbUser.displayName,
+                    educationLevel: dbUser.educationLevel
+                })
+            }
         } catch (error) {
             console.log("Login failed", error)
         }

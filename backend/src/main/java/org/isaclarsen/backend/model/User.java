@@ -18,7 +18,8 @@ public class User {
     private String email;
 
     @Column()
-    private String educationLevel;
+    @Enumerated(EnumType.STRING)
+    private EducationLevel educationLevel;
 
     @Column(unique = true)
     private String displayName;
@@ -26,7 +27,7 @@ public class User {
     @Column()
     private LocalDateTime lastLogin;
 
-    public User(Long userId, String firebaseId, String email, String educationLevel, String displayName,  LocalDateTime lastLogin) {
+    public User(Long userId, String firebaseId, String email, EducationLevel educationLevel, String displayName,  LocalDateTime lastLogin) {
         this.userId = userId;
         this.firebaseId = firebaseId;
         this.email = email;
@@ -61,11 +62,11 @@ public class User {
         this.email = email;
     }
 
-    public String getEducationLevel() {
+    public EducationLevel getEducationLevel() {
         return educationLevel;
     }
 
-    public void setEducationLevel(String educationLevel) {
+    public void setEducationLevel(EducationLevel educationLevel) {
         this.educationLevel = educationLevel;
     }
 

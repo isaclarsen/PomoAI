@@ -6,13 +6,12 @@ import org.isaclarsen.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
 public class AuthService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public AuthService(UserRepository userRepository) {
@@ -20,19 +19,40 @@ public class AuthService {
     }
 
     public User syncUser(String firebaseID, String email, String displayName, String educationLevel) {
-        User existingUser = userRepository.findByFirebaseId(firebaseID).orElse(null);
-        if (existingUser == null) {
-            System.out.println("New user detected: " + firebaseID + email);
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setFirebaseId(firebaseID);
-            newUser.setDisplayName(displayName);
-            newUser.setEducationLevel(educationLevel);
-            newUser.setLastLogin(LocalDateTime.now());
-            return userRepository.save(newUser);
-        } else {
-            existingUser.setLastLogin(LocalDateTime.now());
-            return userRepository.save(existingUser);
-        }
+        return userRepository.findByFirebaseId(firebaseID)
+                .map(existingUser -> {
+                    //When frontend checks user it sends empty strings, if it's an existing user we need to override these
+                    if (displayName != null && !displayName.isEmpty()) {
+                        existingUser.setDisplayName(displayName);
+                    }
+                    if (educationLevel != null && !educationLevel.isEmpty()) {
+                        try {
+                            existingUser.setEducationLevel(EducationLevel.valueOf(educationLevel.toUpperCase()));
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Invalid education level: " + educationLevel);
+                        }
+                    }
+                    existingUser.setLastLogin(LocalDateTime.now());
+                    return userRepository.save(existingUser);
+                })
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setEmail(email);
+                    newUser.setFirebaseId(firebaseID);
+                    newUser.setDisplayName(displayName);
+                    newUser.setLastLogin(LocalDateTime.now());
+
+                    if (educationLevel != null && !educationLevel.isEmpty()) {
+                        try {
+                            newUser.setEducationLevel(EducationLevel.valueOf(educationLevel.toUpperCase()));
+                        } catch (IllegalArgumentException e) {
+                            newUser.setEducationLevel(EducationLevel.OTHER);
+                        }
+                    } else {
+                        newUser.setEducationLevel(null);
+                    }
+
+                    return userRepository.save(newUser);
+                });
     }
 }
