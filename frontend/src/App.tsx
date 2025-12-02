@@ -1,129 +1,131 @@
-import './App.css'
-import { useEffect, useState } from 'react'
-import FocusTimerView from './components/FocusTimerView';
-import QuestionResultView from './components/QuestionResultView';
-import LoginView, { type UserRegistrationData } from './components/LoginView';
-import { startGuestSession, syncUser, updateGuestSessionStatus, type QuestionDTO } from './api/pomoApi';
-import RelaxTimerView from './components/RelaxTimerView';
-import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
+import './App.css';
+import { useEffect, useState } from 'react';
+
+// Components
 import HomePage from './components/HomePage';
+import LoginView from './components/LoginView';
+import OnboardingView from './components/OnBoardingView';
+import FocusTimerView from './components/FocusTimerView';
+import RelaxTimerView from './components/RelaxTimerView';
+import QuestionResultView from './components/QuestionResultView';
+
+// API & Hooks
+import { startGuestSession, updateGuestSessionStatus, syncUser, type QuestionDTO } from './api/pomoApi';
+import { useAuthSync } from './hooks/useAuthSync'; 
 import { auth } from './firebaseConfig';
 
-function App({}) {
+type AppView = 'HOME' | 'LOGIN' | 'ONBOARDING' | 'FOCUS_TIMER' | 'RELAX_TIMER' | 'RESULTS';
 
-  const [user, setUser] = useState<User | null>(null)
-  const [currentView, setCurrentView] = useState<"homePage" | "focusTimer" | "relaxTimer" | "questionResult" | "login">("homePage");
-  const [topic, setTopic] = useState("");
+function App() {
+  
+  // --- LUCKA 1 ---
+  // Hämta ut backendUser, isAuthLoading, logout och refreshUser från vår nya hook.
+  const { backendUser, isAuthLoading, logout, refreshUser} = useAuthSync();
+
+
+  // --- UI STATE (Detta får du gratis av mig) ---
+  const [currentView, setCurrentView] = useState<AppView>('HOME');
+  const [sessionId, setSessionId] = useState<number | null>(null);
   const [questions, setQuestions] = useState<QuestionDTO[]>([]);
-  const [sessionId, setSessionId] = useState<number>(0);
-  const [isAuthChecking, setIsAuthChecking] = useState(true)
+  const [_, setTopic] = useState(""); 
 
+
+  // --- LUCKA 2 & 3: ROUTING EFFECT ---
+  // Det är här "hjärnan" sitter. 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async( firebaseUser) => {
-        if(firebaseUser){
-          console.log("User found: " + firebaseUser.email);
-
-          try{
-            const token = await firebaseUser.getIdToken();
-            const email = firebaseUser.email || "";
-
-            await syncUser(token, email, "", "")
-
-            setUser(firebaseUser);
-            setCurrentView("homePage");
-          }catch(error){
-            console.log("Failed to get user session from backend", error)
-          }
-        }else{
-          console.log("No user found")
-          setUser(null);
-        }
-        setIsAuthChecking(false)
-    });
-    return () => unsubscribe()
-  }, [])
-
-  const handleLoginSuccess = async (data: UserRegistrationData) => {
-    const {fireBaseUser, displayName, educationLevel} = data;
     
-    if(!fireBaseUser){
-      console.error("No user found in fireBase");
+    // Om vi fortfarande laddar (isAuthLoading är true), gör ingenting (return).
+    // ??? Skriv koden här ???
+    if(isAuthLoading === true) return;
+
+
+    // Om vi har en backendUser...
+    if (backendUser) {
+        
+        // ...och användaren saknar educationLevel...
+        // ...då ska vi tvinga vyn till 'ONBOARDING'.
+        // ??? Skriv if-satsen här ???
+        if(backendUser.educationLevel === null){
+          setCurrentView("ONBOARDING")
+        }else{
+          // ...ANNARS (om educationLevel finns)...
+          // ...och vi just nu står på 'LOGIN' eller 'ONBOARDING'...
+          // ...då ska vi skicka användaren till 'HOME'.
+           // ??? Skriv else-satsen här ???
+          if(currentView === "LOGIN" || currentView === "ONBOARDING"){
+            setCurrentView("HOME")
+          }
+        }
     }
 
-    try{
-      const token = await fireBaseUser.getIdToken();
-      const email = fireBaseUser.email || "";
+  }, [backendUser, isAuthLoading]); 
 
-      await syncUser(token, email, displayName, educationLevel);
-  
-      setUser(fireBaseUser);
-      setCurrentView("homePage");
-    }catch(error){
-      console.error("Something went wrong");
-    }
 
-  }
-
-  const handleLogOut = async () => {
-    try{
-      await signOut(auth);
-      setCurrentView("homePage");
-    }catch(error){
-      console.log("Error logging out: " + error);
-    }
-  }
-
-  const handleStartSession = async (incomingTopic: string) => {
-      setTopic(incomingTopic)
-
+  // --- ACTIONS (Dessa är samma som förut, så jag döljer dem för att spara plats) ---
+  const handleOnboardingSubmit = async (displayName: string, educationLevel: string) => {
+    if (!auth.currentUser) return;
     try {
-      const data = await startGuestSession(incomingTopic);
-      setSessionId(data.sessionId);
-      setCurrentView("focusTimer");
-    } catch (error) {
-        console.error("Failed to start Pomo Session", error)
-    }
+        const token = await auth.currentUser.getIdToken();
+        const email = auth.currentUser.email || "";
+        const updatedUser = await syncUser(token, email, displayName, educationLevel);
+        
+        // VIKTIGT: Berätta för hooken att vi har ny data!
+        refreshUser(updatedUser); 
+        
+    } catch (error) { console.error("Onboarding failed", error); }
+  };
+
+  const handleStartSession = async (incomingTopic: string) => { /* ...samma som förut... */ 
+      setTopic(incomingTopic);
+      try {
+        const data = await startGuestSession(incomingTopic);
+        setSessionId(data.sessionId);
+        setCurrentView('FOCUS_TIMER');
+      } catch (error) { console.error(error); }
+  };
+
+  const handleTimerFinished = async () => { /* ...samma som förut... */ 
+      if (!sessionId) return;
+      setCurrentView('RELAX_TIMER');
+      try {
+        const fetchedQuestions = await updateGuestSessionStatus("COMPLETED", sessionId);
+        setQuestions(fetchedQuestions);
+      } catch (error) { console.error(error); }
+  };
+
+  // --- RENDER ---
+  if (isAuthLoading) {
+    return <div><h2>Laddar Pomo.AI...</h2></div>;
   }
 
-  const handleTimerFinished = async (sessionId : number) => {
-    try {
-      setCurrentView("relaxTimer")
-      setQuestions([]);
-      setQuestions(await updateGuestSessionStatus("COMPLETED", sessionId));
-    } catch (error) {
-      console.error("Failed to update status on Pomo Session", error)
-    }
-  }
-
-  const handleRelaxTimerFinished = async () => {
-    setCurrentView("questionResult")
-  }
-
-  if(isAuthChecking){
-    return (
-      <div>
-        <h2>PomoAI is loading...</h2>
-      </div>
-    )
-  }
-  
   return (
     <>
-      {currentView === "homePage" && (
-          <HomePage
-              onStart={handleStartSession}
-              onLoginClick={() => setCurrentView("login")}
-              onLogOutClick={handleLogOut}
-              user={user}
-              />
-            )}
-      {currentView === "login" && <LoginView onLoginSuccess={handleLoginSuccess}></LoginView>}
-      {currentView === "focusTimer" && <FocusTimerView onTimerFinished={() => handleTimerFinished(sessionId)}/>}
-      {currentView === "relaxTimer" && <RelaxTimerView onTimerFinished={() => handleRelaxTimerFinished()}/>}
-      {currentView === "questionResult" && <QuestionResultView questions={questions} onReset={() => setCurrentView("homePage")}/>}
-    </>
+      {currentView === 'HOME' && (
+        <HomePage
+          onStart={handleStartSession}
+          onLoginClick={() => setCurrentView('LOGIN')}
+          onLogOutClick={() => logout()} 
+          user={backendUser as any} 
+        />
+      )}
 
-  )
+      {currentView === 'LOGIN' && (
+        <LoginView onCancel={() => setCurrentView('HOME')} />
+      )}
+
+      {currentView === 'ONBOARDING' && (
+        <OnboardingView 
+            onSubmit={handleOnboardingSubmit} 
+            isSubmitting={isAuthLoading} 
+        />
+      )}
+
+      {/* Timer och Resultat vyer... */}
+      {currentView === 'FOCUS_TIMER' && <FocusTimerView onTimerFinished={handleTimerFinished} />}
+      {currentView === 'RELAX_TIMER' && <RelaxTimerView onTimerFinished={() => setCurrentView('RESULTS')} />}
+      {currentView === 'RESULTS' && <QuestionResultView questions={questions} onReset={() => setCurrentView('HOME')} />}
+    </>
+  );
 }
 
-export default App
+export default App;

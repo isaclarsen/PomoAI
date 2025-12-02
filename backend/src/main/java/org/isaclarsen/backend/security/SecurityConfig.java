@@ -33,9 +33,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     auth.requestMatchers("/api/guest/**").permitAll();
                     auth.requestMatchers("/api/user/auth").authenticated();
-
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -47,14 +47,12 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 1. VEM får anropa oss? (Din React-frontend)
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
 
-        // 2. VAD får de göra?
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // 3. VILKA brev får de skicka? (Viktigt: Authorization måste vara med!)
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        //ENDAST UNDER UTVECKLING, ÄNDRA TILLBAKA SENARE!!!
+//        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(List.of("*"));
 
         // 4. Koppla detta till alla endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

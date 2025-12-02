@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.isaclarsen.backend.model.enums.Status;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity

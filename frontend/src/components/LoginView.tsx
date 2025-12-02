@@ -1,132 +1,42 @@
-import { signInWithPopup, updateProfile, type User } from "firebase/auth";
+import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebaseConfig";
 import { useState } from "react";
-import { syncUser } from "../api/pomoApi";
 
 interface LoginViewProps {
-    onLoginSuccess: (data: UserRegistrationData) => void;
+    onCancel: () => void; // Så man kan gå tillbaka till startsidan
 }
 
-// interface educationLevel {
-//     "highSchool": string,
-//     "university": string,
-//     "vocational": string,
-//     "selfTaught": string,
-//     "other": string
-// }
-
-export interface UserRegistrationData {
-    fireBaseUser: User,
-    displayName: string,
-    educationLevel: string,
-
-}
-
-auth.useDeviceLanguage();
-
-function LoginView({ onLoginSuccess } : LoginViewProps) {
-
-    const [fireBaseUser, setFireBaseUser] = useState<User | null>();
-    const [displayName, setDisplayName] = useState<string>("");
-    const [educationLevel, setEducationLevel] = useState<string>("highSchool");
-    const [currentView, setCurrentView] = useState<"login" | "displayName" | "educationLevel" | "welcomeView">("login");
+function LoginView({ onCancel }: LoginViewProps) {
+    const [error, setError] = useState<string | null>(null);
 
     const handleLogin = async () => {
+        setError(null);
         try {
-            const result = await signInWithPopup(auth, provider);
-            const token = await result.user.getIdToken();
-            const email = result.user.email || "";
-
-            const dbUser = await syncUser(token, email, "", "")
-
-            setFireBaseUser(result.user);
-
-            if(!dbUser.displayName || !dbUser.educationLevel){
-                //User data not complete, onboarding process starts
-                setCurrentView("displayName");
-            }else{
-
-                onLoginSuccess({
-                    fireBaseUser: result.user,
-                    displayName: dbUser.displayName,
-                    educationLevel: dbUser.educationLevel
-                })
-            }
-        } catch (error) {
-            console.log("Login failed", error)
+            // Vi gör INGET annat här.
+            // När denna lyckas kommer App.tsx (som lyssnar) att reagera.
+            await signInWithPopup(auth, provider);
+        } catch (err: any) {
+            console.error("Login failed:", err);
+            setError("Kunde inte logga in. Försök igen.");
         }
-    }
+    };
 
-    const handleNameSubmit = () => {
-        if(!displayName.trim()) return;
-        setCurrentView("educationLevel");
-    }
-    
-    const handleFinalSubmit = async () => {
-        if (fireBaseUser){
+    return (
+        <div className="login-container">
+            <h2>Log in</h2>
+            <p>Save your Pomo-sessions and get a more personal experience.</p>
+            
+            {error && <p style={{ color: "red" }}>{error}</p>}
 
-            try{
-                await updateProfile(fireBaseUser, {
-                    displayName: displayName
-                });
-
-
-                onLoginSuccess({
-                    fireBaseUser: fireBaseUser,
-                    displayName: displayName,
-                    educationLevel: educationLevel
-                });
-
-                }catch(error){
-                    console.error("Could not update profile name")
-                }
-            setCurrentView("welcomeView")
-        }
-    }
-
-    return(
-        <>
-            {currentView === "login" && 
-                <div>   
-                    <button onClick={handleLogin}>Login with Google</button>
-                </div>
-            }
-
-            {currentView === "displayName" &&
-            <div>
-                <h3>What should we call you?</h3>
-                <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Your name..."
-                />
-                <button onClick={handleNameSubmit}>Continue</button>
-            </div>
-            }
-
-            {currentView === "educationLevel" &&
-            <div>
-                <h3>What's your education level?</h3>
-                <select name="educationLevel" value={educationLevel} onChange={(e) => setEducationLevel(e.target.value)}>
-                    <option value="highSchool">High School</option>
-                    <option value="univeristy">University</option>
-                    <option value="vocational">Vocational</option>
-                    <option value="selfTaught">Self taught</option>
-                    <option value="other">Other</option>
-                </select>
-                <button onClick={handleFinalSubmit}>Continue</button>
-            </div>
-            }
-
-            {currentView === "welcomeView" &&
-            <div>
-                <h3>Welcome {displayName}!</h3>
-                <p>What are you studying today?</p>
-            </div>
-            }
-        </>
-    )
+            <button onClick={handleLogin}>
+                Continue with Google
+            </button>
+            
+            <button onClick={onCancel} style={{marginLeft: "10px"}}>
+                Go back
+            </button>
+        </div>
+    );
 }
 
 export default LoginView;

@@ -16,7 +16,7 @@ export interface User{
     firebaseId: string,
     email: string,
     displayName?: string
-    educationLevel?: string;
+    educationLevel?: string | null
 }
 
 const BASE_URL = "http://localhost:8080/api";
