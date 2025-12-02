@@ -4,10 +4,7 @@ import org.isaclarsen.backend.model.dto.CreateSessionRequest;
 import org.isaclarsen.backend.model.dto.CreateSessionResponse;
 import org.isaclarsen.backend.model.dto.UpdateSessionRequest;
 import org.isaclarsen.backend.model.dto.UpdateSessionResponse;
-import org.isaclarsen.backend.repository.PomoSessionRepository;
 import org.isaclarsen.backend.service.PomoSessionService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +22,14 @@ public class PomoSessionController {
     public CreateSessionResponse startGuestSession(@RequestBody CreateSessionRequest createSessionRequest) {
         return pomoSessionService.createGuestSession(createSessionRequest);
     }
+
+//    @PostMapping("/session/generate")
+//    public CreateSessionResponse startUserSession(@AuthenticationPrincipal String firebaseId,
+//                                                  @RequestBody CreateSessionRequest createSessionRequest
+//    )
+//    {
+//        return pomoSessionService.createUserSession(createSessionRequest);
+//    }
 
     @PutMapping("/guest/sessions/{sessionId}")
     public UpdateSessionResponse updateSession(

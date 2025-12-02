@@ -44,6 +44,11 @@ public class PomoSessionService {
         );
     }
 
+    public CreateSessionResponse startGuestSession(CreateSessionRequest createSessionRequest) {
+        //Här kommer vi använda den refaktorerade metoden när jag ska skapa denna metoden.
+        return null;
+    }
+
     public UpdateSessionResponse updateSession(Long sessionId, UpdateSessionRequest request) {
         PomoSession pomoToUpdate = pomoSessionRepository.findById(sessionId)
                 .orElseThrow(() -> {
@@ -51,50 +56,16 @@ public class PomoSessionService {
                     return new ResourceNotFoundException(message);
                 });
 
-        List<QuestionsDTO> aiQuestions = new ArrayList<>();
-
+        List<QuestionsDTO> aiQuestions = null;
         try {
             Status newStatus = Status.valueOf(request.status());
             pomoToUpdate.setStatus(newStatus);
 
             //When status is completed, call AI and generate questions
             if (newStatus.equals(Status.COMPLETED)) {
-
-                String promptText = """
-                        You are a strict teacher. Your task is to generate 3 study questions based on a topic.
-                        
-                        Topic: <topic>%s</topic>
-                        
-                        Instructions:
-                        1. Language: Detect the language of the topic inside the tags. You MUST generate the questions in the SAME language as the topic.
-                        2. Format: Return ONLY a raw JSON list (array). Do not use markdown (```json).
-                        3. Structure per object:
-                            - 'id' (integer)
-                            - 'text' (string, the question)
-                            - 'options' (array of 4 strings: 1 correct, 3 distractors)
-                            - 'correctAnswer' (string, MUST match one of the options exactly)
-                       
-                        CRITICAL CONSTRAINT FOR ACTIVE RECALL:
-                        4. The question MUST be answerable without seeing the options.\s
-                            - BAD: "Which of the following statements is true?" (Depends on options)
-                            - GOOD: "What is the main function of the kidneys?" (Can be answered alone)
-                            - DO NOT start questions with "Which of the following...".
-                        5. Safety: If the topic is inappropriate, nonsense, or impossible to generate questions for, return an empty JSON list: [].
-                        """.formatted(pomoToUpdate.getTopic());
-
-
-                System.out.println("Sending prompt to AI...");
-
-                //Send the prompt to AI and convert to QuestionsDTO object to validate structure
-                aiQuestions = chatClient.prompt()
-                        .user(promptText)
-                        .call()
-                        .entity(new ParameterizedTypeReference<List<QuestionsDTO>>() {
-                        });
-
-                //Converts back to string to save in database
-                String jsonString = objectMapper.writeValueAsString(aiQuestions);
-                pomoToUpdate.setQuestionsJson(jsonString);
+                GenerateQuestionsResponse response = generateQuestions(pomoToUpdate);
+                pomoToUpdate.setQuestionsJson(response.jsonString());
+                aiQuestions = response.aiQuestions();
             }
 
         } catch (IllegalArgumentException e) {
@@ -108,6 +79,45 @@ public class PomoSessionService {
                 "Session with ID: " + sessionId + " successfully updated status to COMPLETED",
                 aiQuestions
         );
+    }
+
+    private GenerateQuestionsResponse generateQuestions(PomoSession pomoToUpdate) throws JsonProcessingException {
+        List<QuestionsDTO> aiQuestions;
+        String promptText = """
+                You are a strict teacher. Your task is to generate 3 study questions based on a topic.
+                
+                Topic: <topic>%s</topic>
+                
+                Instructions:
+                1. Language: Detect the language of the topic inside the tags. You MUST generate the questions in the SAME language as the topic.
+                2. Format: Return ONLY a raw JSON list (array). Do not use markdown (```json).
+                3. Structure per object:
+                    - 'id' (integer)
+                    - 'text' (string, the question)
+                    - 'options' (array of 4 strings: 1 correct, 3 distractors)
+                    - 'correctAnswer' (string, MUST match one of the options exactly)
+                
+                CRITICAL CONSTRAINT FOR ACTIVE RECALL:
+                4. The question MUST be answerable without seeing the options.\s
+                    - BAD: "Which of the following statements is true?" (Depends on options)
+                    - GOOD: "What is the main function of the kidneys?" (Can be answered alone)
+                    - DO NOT start questions with "Which of the following...".
+                5. Safety: If the topic is inappropriate, nonsense, or impossible to generate questions for, return an empty JSON list: [].
+                """.formatted(pomoToUpdate.getTopic());
+
+
+        System.out.println("Sending prompt to AI...");
+
+        //Send the prompt to AI and convert to QuestionsDTO object to validate structure
+        aiQuestions = chatClient.prompt()
+                .user(promptText)
+                .call()
+                .entity(new ParameterizedTypeReference<List<QuestionsDTO>>() {
+                });
+
+        //Converts back to string to save in database
+        String jsonString = objectMapper.writeValueAsString(aiQuestions);
+        return new GenerateQuestionsResponse(jsonString, aiQuestions);
     }
 
 }

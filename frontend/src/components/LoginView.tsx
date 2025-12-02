@@ -3,7 +3,7 @@ import { auth, provider } from "../firebaseConfig";
 import { useState } from "react";
 
 interface LoginViewProps {
-    onCancel: () => void; // Så man kan gå tillbaka till startsidan
+    onCancel: () => void;
 }
 
 function LoginView({ onCancel }: LoginViewProps) {
@@ -12,8 +12,6 @@ function LoginView({ onCancel }: LoginViewProps) {
     const handleLogin = async () => {
         setError(null);
         try {
-            // Vi gör INGET annat här.
-            // När denna lyckas kommer App.tsx (som lyssnar) att reagera.
             await signInWithPopup(auth, provider);
         } catch (err: any) {
             console.error("Login failed:", err);
