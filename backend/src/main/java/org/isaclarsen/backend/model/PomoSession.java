@@ -5,6 +5,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.isaclarsen.backend.model.enums.Status;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 public class PomoSession {
@@ -33,6 +34,9 @@ public class PomoSession {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(nullable = false)
+    private String accessToken;
+
     public PomoSession(Long sessionId, User user, int durationMinutes, LocalDateTime timestamp, String questionsJson, String topic, Status status) {
         this.sessionId = sessionId;
         this.user = user;
@@ -44,6 +48,13 @@ public class PomoSession {
     }
 
     public PomoSession() {}
+
+    @PrePersist
+    public void generateToken(){
+        if (this.accessToken == null){
+            this.accessToken = java.util.UUID.randomUUID().toString();
+        }
+    }
 
     public Long getSessionId() {
         return sessionId;
@@ -100,4 +111,8 @@ public class PomoSession {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    public String getAccessToken() {return accessToken;}
+
+    public void setAccessToken(String accessToken) {this.accessToken = accessToken;}
 }

@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PomoSessionService {
@@ -50,7 +48,8 @@ public class PomoSessionService {
         return new CreateSessionResponse(
                 pomoSession.getSessionId(),
                 pomoSession.getDurationMinutes(),
-                pomoSession.getStatus()
+                pomoSession.getStatus(),
+                pomoSession.getAccessToken()
         );
     }
 
@@ -69,7 +68,8 @@ public class PomoSessionService {
             return new CreateSessionResponse(
                     pomoSession.getSessionId(),
                     pomoSession.getDurationMinutes(),
-                    pomoSession.getStatus()
+                    pomoSession.getStatus(),
+                    pomoSession.getAccessToken()
             );
     }
 
@@ -79,6 +79,11 @@ public class PomoSessionService {
                     String message = "Session with id " + sessionId + " not found";
                     return new ResourceNotFoundException(message);
                 });
+
+        if(!pomoToUpdate.getAccessToken().equals(request.accessToken())){
+            //TODO: Ändra till 403 senare
+            throw new RuntimeException("Unauthorized: Access Token mismatch for this session");
+        }
 
         List<QuestionsDTO> aiQuestions = null;
         try {

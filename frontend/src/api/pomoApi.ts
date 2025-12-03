@@ -8,7 +8,8 @@ export interface QuestionDTO{
 export interface SessionResponse{
     sessionId: number,
     questions: QuestionDTO[],
-    status: string
+    status: string,
+    accessToken: string
 }
 
 export interface User{
@@ -62,15 +63,18 @@ export const startUserSession = async (token: string, topic : string): Promise<S
         return response.json();
 }
 
-export const updateGuestSessionStatus = async (status : string, sessionId : number) : Promise<QuestionDTO[]> => {
-    const url = BASE_URL + "/guest/session/" + sessionId
+export const updateSessionStatus = async (status : string, sessionToken: string, sessionId : number) : Promise<QuestionDTO[]> => {
+    const url = BASE_URL + "/session/" + sessionId
 
     const response = await fetch(url, {
         method: "PUT",
         headers: {
             "Content-type": "application/json",
         },
-        body: JSON.stringify({ status: status })
+        body: JSON.stringify({ 
+            status: status,
+            accessToken: sessionToken 
+        })
     });
 
     if(!response.ok){

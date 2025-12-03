@@ -7,7 +7,7 @@ import java.util.List;
 public record CreateSessionResponse(
         Long sessionId,
         int durationTime,
-        Status status
-
+        Status status,
+        String accessToken
 )
 { }

@@ -10,7 +10,7 @@ import RelaxTimerView from './components/RelaxTimerView';
 import QuestionResultView from './components/QuestionResultView';
 
 // API & Hooks
-import { startGuestSession, updateGuestSessionStatus, startUserSession, syncUser, type QuestionDTO } from './api/pomoApi';
+import { startGuestSession, updateSessionStatus, startUserSession, syncUser, type QuestionDTO } from './api/pomoApi';
 import { useAuthSync } from './hooks/useAuthSync'; 
 import { auth } from './firebaseConfig';
 
@@ -22,6 +22,7 @@ function App() {
 
   const [currentView, setCurrentView] = useState<AppView>('HOME');
   const [sessionId, setSessionId] = useState<number | null>(null);
+  const [sessionToken, setSessionToken] = useState<string>("");
   const [questions, setQuestions] = useState<QuestionDTO[]>([]);
   const [_, setTopic] = useState(""); 
 
@@ -59,11 +60,12 @@ function App() {
         if(!auth.currentUser){
           const data = await startGuestSession(incomingTopic);
           setSessionId(data.sessionId);
+          setSessionToken(data.accessToken);
         }else{
           const token = await auth.currentUser.getIdToken()
-          const data = await startUserSession(token, incomingTopic);
+          const data = await startUserSession(token, incomingTopic);  
           setSessionId(data.sessionId);
-          console.log("Har vi kommit hit så har vi lyckats hämta token och startat en USER session")
+          setSessionToken(data.accessToken);
         }
         setCurrentView('FOCUS_TIMER')
       } catch (error) { console.error(error); }
@@ -73,7 +75,7 @@ function App() {
       if (!sessionId) return;
       setCurrentView('RELAX_TIMER');
       try {
-        const fetchedQuestions = await updateGuestSessionStatus("COMPLETED", sessionId);
+        const fetchedQuestions = await updateSessionStatus("COMPLETED", sessionToken, sessionId);
         setQuestions(fetchedQuestions);
       } catch (error) { console.error(error); }
   };
