@@ -10,8 +10,6 @@ function UserSessionStarter({ onStart } : Props){
 
     return(
         <div>
-            <h2>Start a Pomo Session!</h2>
-
             <input
             placeholder="What are you studying today?"
             type="text" value={topic}

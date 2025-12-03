@@ -2,17 +2,18 @@ import './App.css';
 import { useEffect, useState } from 'react';
 
 // Components
-import HomePage from './components/HomePage';
-import LoginView from './components/LoginView';
-import OnboardingView from './components/OnBoardingView';
-import FocusTimerView from './components/FocusTimerView';
-import RelaxTimerView from './components/RelaxTimerView';
-import QuestionResultView from './components/QuestionResultView';
+import LandingPage from './views/LandingPage';
+import LoginView from './views/LoginView';
+import OnboardingView from './views/OnBoardingView';
+import FocusTimerView from './views/FocusTimerView';
+import RelaxTimerView from './views/RelaxTimerView';
+import QuestionResultView from './views/QuestionResultView';
 
 // API & Hooks
 import { startGuestSession, updateSessionStatus, startUserSession, syncUser, type QuestionDTO } from './api/pomoApi';
 import { useAuthSync } from './hooks/useAuthSync'; 
 import { auth } from './firebaseConfig';
+import Dashboard from './views/Dashboard';
 
 type AppView = 'HOME' | 'LOGIN' | 'ONBOARDING' | 'FOCUS_TIMER' | 'RELAX_TIMER' | 'RESULTS';
 
@@ -87,12 +88,18 @@ function App() {
   return (
     <>
       {currentView === 'HOME' && (
-        <HomePage
+        backendUser ? (
+          <Dashboard
+          user={backendUser}
           onStart={handleStartSession}
-          onLoginClick={() => setCurrentView('LOGIN')}
-          onLogOutClick={() => logout()} 
-          user={backendUser as any} 
-        />
+          onLogoutClick={logout}
+          />
+        ) : (
+          <LandingPage
+            onStart={handleStartSession}
+            onLoginClick={() => setCurrentView('LOGIN')}
+          />
+        )
       )}
 
       {currentView === 'LOGIN' && (
