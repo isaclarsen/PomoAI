@@ -10,7 +10,7 @@ import RelaxTimerView from './components/RelaxTimerView';
 import QuestionResultView from './components/QuestionResultView';
 
 // API & Hooks
-import { startGuestSession, updateGuestSessionStatus, syncUser, type QuestionDTO } from './api/pomoApi';
+import { startGuestSession, updateGuestSessionStatus, startUserSession, syncUser, type QuestionDTO } from './api/pomoApi';
 import { useAuthSync } from './hooks/useAuthSync'; 
 import { auth } from './firebaseConfig';
 
@@ -29,7 +29,7 @@ function App() {
     if(isAuthLoading === true) return;
 
     if(backendUser){
-      //User is missing educationLevel, meaning that user has not done onboarding process
+      //User is missing educationLevel, meaning that user has not completed onboarding process
       if(backendUser.educationLevel === null){
         setCurrentView("ONBOARDING")
       }else{
@@ -56,9 +56,16 @@ function App() {
   const handleStartSession = async (incomingTopic: string) => {
       setTopic(incomingTopic);
       try {
-        const data = await startGuestSession(incomingTopic);
-        setSessionId(data.sessionId);
-        setCurrentView('FOCUS_TIMER');
+        if(!auth.currentUser){
+          const data = await startGuestSession(incomingTopic);
+          setSessionId(data.sessionId);
+        }else{
+          const token = await auth.currentUser.getIdToken()
+          const data = await startUserSession(token, incomingTopic);
+          setSessionId(data.sessionId);
+          console.log("Har vi kommit hit så har vi lyckats hämta token och startat en USER session")
+        }
+        setCurrentView('FOCUS_TIMER')
       } catch (error) { console.error(error); }
   };
 

@@ -1,15 +1,13 @@
 import { useState } from "react";
 
 interface OnboardingViewProps {
-    // Vi skickar upp datan till App.tsx som gör API-anropet.
-    // Det håller vyn "dum" och logiken centraliserad.
     onSubmit: (displayName: string, educationLevel: string) => void;
-    isSubmitting: boolean; // För att inaktivera knappen när vi laddar
+    isSubmitting: boolean;
 }
 
 function OnboardingView({ onSubmit, isSubmitting }: OnboardingViewProps) {
     const [displayName, setDisplayName] = useState("");
-    const [educationLevel, setEducationLevel] = useState("HIGH_SCHOOL"); // Default värde matchar Backend ENUM
+    const [educationLevel, setEducationLevel] = useState("HIGH_SCHOOL");
 
     const handleSubmit = () => {
         if (!displayName.trim()) {

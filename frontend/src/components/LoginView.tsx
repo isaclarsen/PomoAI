@@ -15,7 +15,7 @@ function LoginView({ onCancel }: LoginViewProps) {
             await signInWithPopup(auth, provider);
         } catch (err: any) {
             console.error("Login failed:", err);
-            setError("Kunde inte logga in. Försök igen.");
+            setError("Login failed. Please try again");
         }
     };
 

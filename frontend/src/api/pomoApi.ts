@@ -22,7 +22,7 @@ export interface User{
 const BASE_URL = "http://localhost:8080/api";
 
 export const startGuestSession = async (topic : string): Promise<SessionResponse> => {
-    const url = BASE_URL + "/guest/sessions/generate"
+    const url = BASE_URL + "/guest/session/generate"
 
     const response = await fetch(url, {
         method: "POST",
@@ -41,8 +41,29 @@ export const startGuestSession = async (topic : string): Promise<SessionResponse
         return response.json();
 }
 
+export const startUserSession = async (token: string, topic : string): Promise<SessionResponse> => {
+    const url = BASE_URL + "/session/generate"
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ topicText: topic })
+    });
+    
+        if(!response.ok){
+            throw new Error("Failed to start session");
+        }
+
+        console.log("Successfully started a Pomo Session!")
+
+        return response.json();
+}
+
 export const updateGuestSessionStatus = async (status : string, sessionId : number) : Promise<QuestionDTO[]> => {
-    const url = BASE_URL + "/guest/sessions/" + sessionId
+    const url = BASE_URL + "/guest/session/" + sessionId
 
     const response = await fetch(url, {
         method: "PUT",

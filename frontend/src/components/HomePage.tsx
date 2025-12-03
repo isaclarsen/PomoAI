@@ -1,5 +1,6 @@
     import type { User } from 'firebase/auth';
     import GuestSessionStarter from './GuestSessionStarter';
+import UserSessionStarter from './UserSessionStarter';
 
     interface HomePageProps {
         onStart: (topic:string) => void;
@@ -31,7 +32,7 @@
                     <h2>Study smarter with AI.</h2>
                     <div>
                         {user ? (
-                            <div>Här kommer riktiga pomo vara (inte guest)</div>
+                            <UserSessionStarter onStart={onStart}></UserSessionStarter>
                         ) : (
                             <GuestSessionStarter onStart={onStart}></GuestSessionStarter>
                         )}

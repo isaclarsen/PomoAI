@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.isaclarsen.backend.exception.ResourceNotFoundException;
 import org.isaclarsen.backend.model.PomoSession;
+import org.isaclarsen.backend.model.User;
 import org.isaclarsen.backend.model.dto.*;
 import org.isaclarsen.backend.model.enums.Status;
 import org.isaclarsen.backend.repository.PomoSessionRepository;
+import org.isaclarsen.backend.repository.UserRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -14,24 +16,32 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PomoSessionService {
 
     private final PomoSessionRepository pomoSessionRepository;
+    private final UserRepository userRepository;
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public PomoSessionService(PomoSessionRepository pomoSessionRepository, ChatClient.Builder chatClientBuilder, ObjectMapper objectMapper) {
+    public PomoSessionService(
+            PomoSessionRepository pomoSessionRepository,
+            ChatClient.Builder chatClientBuilder,
+            ObjectMapper objectMapper,
+            UserRepository userRepository)
+    {
         this.pomoSessionRepository = pomoSessionRepository;
         this.chatClient = chatClientBuilder.build();
         this.objectMapper = objectMapper;
+        this.userRepository = userRepository;
     }
 
-    public CreateSessionResponse createGuestSession(CreateSessionRequest createSessionRequest) {
+    public CreateSessionResponse createGuestSession(CreateSessionRequest request) {
         PomoSession pomoSession = new PomoSession();
-        pomoSession.setTopic(createSessionRequest.topicText());
+        pomoSession.setTopic(request.topicText());
         pomoSession.setStatus(Status.IN_PROGRESS);
         pomoSession.setDurationMinutes(25);
 
@@ -44,9 +54,23 @@ public class PomoSessionService {
         );
     }
 
-    public CreateSessionResponse startGuestSession(CreateSessionRequest createSessionRequest) {
-        //Här kommer vi använda den refaktorerade metoden när jag ska skapa denna metoden.
-        return null;
+    public CreateSessionResponse createUserSession(CreateSessionRequest request, String firebaseId) {
+            User user = userRepository.findByFirebaseId(firebaseId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Firebase User not found"));
+
+            PomoSession pomoSession = new PomoSession();
+            pomoSession.setUser(user);
+            pomoSession.setTopic(request.topicText());
+            pomoSession.setStatus(Status.IN_PROGRESS);
+            pomoSession.setDurationMinutes(25);
+
+            pomoSessionRepository.save(pomoSession);
+
+            return new CreateSessionResponse(
+                    pomoSession.getSessionId(),
+                    pomoSession.getDurationMinutes(),
+                    pomoSession.getStatus()
+            );
     }
 
     public UpdateSessionResponse updateSession(Long sessionId, UpdateSessionRequest request) {

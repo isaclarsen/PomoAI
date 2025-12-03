@@ -4,13 +4,13 @@ interface Props {
     onStart: (topic : string) => void;
 }
 
-function GuestSessionStarter({ onStart } : Props){
+function UserSessionStarter({ onStart } : Props){
 
     const [topic, setTopic] = useState("")
 
     return(
         <div>
-            <h2>Try out PomoAI!</h2>
+            <h2>Start a Pomo Session!</h2>
 
             <input
             placeholder="What are you studying today?"
@@ -25,4 +25,4 @@ function GuestSessionStarter({ onStart } : Props){
     )
 }
 
-export default GuestSessionStarter;
+export default UserSessionStarter;
