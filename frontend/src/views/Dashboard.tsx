@@ -12,12 +12,12 @@ function Dashboard({ user, onStart, onLogoutClick }: DashboardProps) {
         <div>
             <header>
                 <div>
-                    <h1>POMOAI</h1>
-                    <span>DASHBOARD</span>
+                    <h1 className='text-white'>POMOAI</h1>
+                    <span className='text-white'>DASHBOARD</span>
                 </div>
                 <div>
-                    <span>Hi {user.displayName}, ready to study?</span>
-                    <button onClick={onLogoutClick}>
+                    <span className='text-white'>Hi {user.displayName}, ready to study?</span>
+                    <button onClick={onLogoutClick} className='text-white'>
                         Log out
                     </button>
                 </div>
@@ -25,18 +25,18 @@ function Dashboard({ user, onStart, onLogoutClick }: DashboardProps) {
 
             <main>
                 <section>
-                    <h2>Time to focus?</h2>
-                    <p>Choose a topic and let AI generate questions for you after your session.</p>
+                    <h2 className='text-white'>Time to focus?</h2>
+                    <p className='text-white'>Choose a topic and let AI generate questions for you after your session.</p>
 
                     <div>
-                        <h3>Start Session</h3>
+                        <h3 className='text-white'>Start Session</h3>
                         <UserSessionStarter onStart={onStart}/>
                     </div>
                 </section>
 
                 <section>
-                    <h3>Your Sessions</h3>
-                    <p>No sessions saved yet...</p>
+                    <h3 className='text-white'>Your Sessions</h3>
+                    <p className='text-white'>No sessions saved yet...</p>
                 </section>
             </main>
         </div>

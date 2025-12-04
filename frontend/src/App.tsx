@@ -9,6 +9,7 @@ import RelaxTimerView from './views/RelaxTimerView';
 import QuestionResultView from './views/QuestionResultView';
 import LoginModal from './components/LoginModal';
 import Dashboard from './views/Dashboard';
+import LoadingView from './views/LoadingView';
 
 // API & Hooks
 import { startGuestSession, updateSessionStatus, startUserSession, type QuestionDTO } from './api/pomoApi';
@@ -71,7 +72,7 @@ function App() {
   };
 
   if (isAuthLoading) {
-    return <div></div>;
+    return <LoadingView/>
   }
 
   return (
