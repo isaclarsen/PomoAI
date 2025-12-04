@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes border-spin-smooth {
+  0% {
+    transform: rotate(0turn);
+  }
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+/* Utility class for the spinning border */
+.border-spin-smooth {
+  animation: border-spin-smooth 8s infinite;
+  will-change: transform;
+}
+

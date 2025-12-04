@@ -14,6 +14,7 @@ import { startGuestSession, updateSessionStatus, startUserSession, syncUser, typ
 import { useAuthSync } from './hooks/useAuthSync'; 
 import { auth } from './firebaseConfig';
 import Dashboard from './views/Dashboard';
+import { AppBackground } from './components/AppBackground';
 
 type AppView = 'HOME' | 'LOGIN' | 'ONBOARDING' | 'FOCUS_TIMER' | 'RELAX_TIMER' | 'RESULTS';
 
@@ -82,7 +83,7 @@ function App() {
   };
 
   if (isAuthLoading) {
-    return <div><h2>Laddar Pomo.AI...</h2></div>;
+    return <div></div>;
   }
 
   return (
