@@ -27,7 +27,7 @@ function App() {
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [sessionToken, setSessionToken] = useState<string>("");
   const [questions, setQuestions] = useState<QuestionDTO[]>([]);
-  const [_, setTopic] = useState(""); 
+  const [topic, setTopic] = useState(""); 
 
   useEffect(() => {
     if(isAuthLoading === true) return;
@@ -95,7 +95,7 @@ function App() {
       )}
 
       {currentView === 'HOME' && (
-        backendUser ? (
+        backendUser && backendUser.displayName ? (
           <Dashboard
             user={backendUser}
             onStart={handleStartSession}
@@ -109,7 +109,7 @@ function App() {
         )
       )}
 
-      {currentView === 'FOCUS_TIMER' && <FocusTimerView onTimerFinished={handleTimerFinished} />}
+      {currentView === 'FOCUS_TIMER' && <FocusTimerView onTimerFinished={handleTimerFinished} currentTopic={topic} />}
       {currentView === 'RELAX_TIMER' && <RelaxTimerView onTimerFinished={() => setCurrentView('RESULTS')} />}
       {currentView === 'RESULTS' && <QuestionResultView questions={questions} onReset={() => setCurrentView('HOME')} />}
     </>

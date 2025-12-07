@@ -39,7 +39,7 @@ function RelaxTimerView({onTimerFinished} : FocusTimerViewProps){
 
     return (
         <div>
-            <h2>Bra jobbat! Ta en liten paus!</h2>
+            <h2 className='text-white'>Bra jobbat! Ta en liten paus!</h2>
             <h3>{formatTime(timeLeft)}</h3>
             <p>Tips: töm diskmaskinen 🤠</p>
             <button onClick={onTimerFinished}>

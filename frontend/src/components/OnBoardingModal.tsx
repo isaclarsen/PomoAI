@@ -36,7 +36,7 @@ export default function OnboardingModal({ onComplete }: OnboardingViewProps) {
             <div className="absolute inset-0 bg-black/35 backdrop-blur-sm transition-opacity"/>
 
             {/* --- 2. MODAL CARD --- */}
-            <div className="relative w-full max-w-md bg-[#111111] border border-white/5 rounded-3xl shadow-2xl transform transition-all animate-fade-in-up overflow-hidden">
+            <div className="relative w-full max-w-md bg-[#111111] border border-white/5 rounded-3xl shadow-2xl transform transition-all animate-snap-in overflow-hidden">
 
                 <div className="p-8 pt-10 text-center">
                     {/* Logo */}

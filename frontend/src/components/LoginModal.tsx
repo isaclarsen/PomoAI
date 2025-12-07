@@ -14,7 +14,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     
-    if (!isOpen) return null; // Rendera inget om den är stängd
+    if (!isOpen) return null;
 
     const handleGoogleLogin = async () => {
         setIsLoading(true);
@@ -25,6 +25,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         } catch (err: any) {
             console.error("Login failed:", err);
             setError("Login failed. Please try again");
+        }finally{
             setIsLoading(false);
         }
     };
@@ -39,7 +40,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             />
 
             {/* --- 2. MODAL CARD --- */}
-            <div className="relative w-full max-w-md bg-[#111111] border border-white/5 rounded-3xl shadow-2xl transform transition-all animate-fade-in-up overflow-hidden">
+            <div className="relative w-full max-w-md bg-[#111111] border border-white/5 rounded-3xl shadow-2xl transform transition-all animate-snap-in overflow-hidden">
 
                 {/* Close button */}
                 <button 

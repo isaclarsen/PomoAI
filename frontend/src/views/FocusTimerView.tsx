@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { useEffect } from 'react'
+import { CircularProgress } from '../components/CircularProgress';
 
 interface FocusTimerViewProps {
     onTimerFinished: () => void;
+    currentTopic : string
 }
 
-function FocusTimerView({onTimerFinished} : FocusTimerViewProps){
+function FocusTimerView({onTimerFinished, currentTopic} : FocusTimerViewProps){
 
-        const [timeLeft, setTimeLeft] = useState(15)
+        const [timeLeft, setTimeLeft] = useState(1500)
 
         useEffect(() => {
             if (!timeLeft) return;
@@ -38,12 +40,21 @@ function FocusTimerView({onTimerFinished} : FocusTimerViewProps){
         }
 
     return (
-        <div>
-            <h2>Fokus!</h2>
-            <h3>{formatTime(timeLeft)}</h3>
-            <button onClick={onTimerFinished}>
+        <div className='min-h-screen bg-[#050508] text-white font-sans selection:bg-rose-500/30 selection:text-rose-200 relative overflow-x-hidden'>
+            <div className='flex flex-col h-screen justify-center items-center text-center'>
+                <div className="animate-fade-in-up">
+                </div>
+                <CircularProgress timeLeft={timeLeft} totalTime={25 * 60}>
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                        <span className="text-l text-slate-300 font-semibold uppercase tracking-wider">{currentTopic}</span>
+                    </div>
+                    <h2 className='text-7xl md:text-8xl lg:text-9xl font-bold bg-gradient-to-r bg-clip-text from-rose-400 to-indigo-400 text-transparent tracking-tight '>{formatTime(timeLeft)}</h2>
+                    <p className='text-lg md:text-xl text-slate-400 leading-relaxed font-light'>PomoAI</p>
+                </CircularProgress>
+            </div>
+            {/* <button className='' onClick={onTimerFinished}>
                 Skippa timer (dev)
-            </button>
+            </button> */}
         </div>
     )
 }
