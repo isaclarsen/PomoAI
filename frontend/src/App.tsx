@@ -111,7 +111,10 @@ function App() {
 
       {currentView === 'FOCUS_TIMER' && <FocusTimerView onTimerFinished={handleTimerFinished} currentTopic={topic} />}
       {currentView === 'RELAX_TIMER' && <RelaxTimerView onTimerFinished={() => setCurrentView('RESULTS')} />}
-      {currentView === 'RESULTS' && <QuestionResultView questions={questions} onReset={() => setCurrentView('HOME')} />}
+      {currentView === 'RESULTS' && <QuestionResultView questions={questions} onReset={() => {
+        setCurrentView('HOME')
+        setQuestions([])
+      }}/>}
     </>
   );
 }
