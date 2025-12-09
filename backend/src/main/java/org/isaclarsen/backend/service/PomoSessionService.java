@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.isaclarsen.backend.exception.ResourceNotFoundException;
 import org.isaclarsen.backend.model.PomoSession;
+import org.isaclarsen.backend.model.PomoSettings;
 import org.isaclarsen.backend.model.User;
 import org.isaclarsen.backend.model.dto.*;
 import org.isaclarsen.backend.model.enums.Status;
@@ -41,13 +42,15 @@ public class PomoSessionService {
         PomoSession pomoSession = new PomoSession();
         pomoSession.setTopic(request.topicText());
         pomoSession.setStatus(Status.IN_PROGRESS);
-        pomoSession.setDurationMinutes(25);
+
+        PomoSettings pomoSettings = new PomoSettings();
+        pomoSession.setPomoSettings(pomoSettings);
 
         pomoSessionRepository.save(pomoSession);
 
         return new CreateSessionResponse(
                 pomoSession.getSessionId(),
-                pomoSession.getDurationMinutes(),
+                pomoSession.getPomoSettings(),
                 pomoSession.getStatus(),
                 pomoSession.getAccessToken()
         );
@@ -57,17 +60,13 @@ public class PomoSessionService {
             User user = userRepository.findByFirebaseId(firebaseId)
                     .orElseThrow(() -> new ResourceNotFoundException("Firebase User not found"));
 
-            PomoSession pomoSession = new PomoSession();
-            pomoSession.setUser(user);
-            pomoSession.setTopic(request.topicText());
-            pomoSession.setStatus(Status.IN_PROGRESS);
-            pomoSession.setDurationMinutes(25);
+        PomoSession pomoSession = initializePomoSession(request, user);
 
-            pomoSessionRepository.save(pomoSession);
+        pomoSessionRepository.save(pomoSession);
 
             return new CreateSessionResponse(
                     pomoSession.getSessionId(),
-                    pomoSession.getDurationMinutes(),
+                    pomoSession.getPomoSettings(),
                     pomoSession.getStatus(),
                     pomoSession.getAccessToken()
             );
@@ -113,7 +112,7 @@ public class PomoSessionService {
     private GenerateQuestionsResponse generateQuestions(PomoSession pomoToUpdate) throws JsonProcessingException {
         List<QuestionsDTO> aiQuestions;
         String promptText = """
-                You are a strict teacher. Your task is to generate 3 study questions based on a topic.
+                You are a strict teacher. Your task is to generate %d study questions based on a topic.
                 
                 Topic: <topic>%s</topic>
                 
@@ -132,7 +131,7 @@ public class PomoSessionService {
                     - GOOD: "What is the main function of the kidneys?" (Can be answered alone)
                     - DO NOT start questions with "Which of the following...".
                 5. Safety: If the topic is inappropriate, nonsense, or impossible to generate questions for, return an empty JSON list: [].
-                """.formatted(pomoToUpdate.getTopic());
+                """.formatted(pomoToUpdate.getPomoSettings().getQuestionCount(), pomoToUpdate.getTopic());
 
 
         System.out.println("Sending prompt to AI...");
@@ -147,6 +146,23 @@ public class PomoSessionService {
         //Converts back to string to save in database
         String jsonString = objectMapper.writeValueAsString(aiQuestions);
         return new GenerateQuestionsResponse(jsonString, aiQuestions);
+    }
+
+    private static PomoSession initializePomoSession(CreateSessionRequest request, User user) {
+        PomoSession pomoSession = new PomoSession();
+        pomoSession.setUser(user);
+        pomoSession.setTopic(request.topicText());
+        pomoSession.setStatus(Status.IN_PROGRESS);
+
+        PomoSettings userSettings = user.getPomoSettings();
+
+        PomoSettings sessionSettings = new PomoSettings();
+        sessionSettings.setFocusMinutes(userSettings.getFocusMinutes());
+        sessionSettings.setRelaxMinutes(userSettings.getRelaxMinutes());
+        sessionSettings.setQuestionCount(userSettings.getQuestionCount());
+
+        pomoSession.setPomoSettings(sessionSettings);
+        return pomoSession;
     }
 
 }

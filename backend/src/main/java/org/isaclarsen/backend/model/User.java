@@ -27,6 +27,9 @@ public class User {
     @Column()
     private LocalDateTime lastLogin;
 
+    @Embedded
+    private PomoSettings pomoSettings;
+
     public User(Long userId, String firebaseId, String email, EducationLevel educationLevel, String displayName,  LocalDateTime lastLogin) {
         this.userId = userId;
         this.firebaseId = firebaseId;
@@ -36,7 +39,9 @@ public class User {
         this.lastLogin = lastLogin;
     }
 
-    public User() {}
+    public User() {
+        this.pomoSettings = new PomoSettings();
+    }
 
     public Long getUserId() {
         return userId;
@@ -83,4 +88,8 @@ public class User {
     public void setLastLogin(LocalDateTime lastLogin) {
         this.lastLogin = lastLogin;
     }
+
+    public PomoSettings getPomoSettings() {return pomoSettings;}
+
+    public void setPomoSettings(PomoSettings pomoSettings) {}
 }

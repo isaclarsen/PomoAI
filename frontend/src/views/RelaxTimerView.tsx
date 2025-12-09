@@ -8,7 +8,7 @@ interface FocusTimerViewProps {
 
 function RelaxTimerView({onTimerFinished} : FocusTimerViewProps){
 
-        const [timeLeft, setTimeLeft] = useState(10)
+        const [timeLeft, setTimeLeft] = useState(15)
 
         useEffect(() => {
             if (!timeLeft) return;
@@ -43,7 +43,7 @@ function RelaxTimerView({onTimerFinished} : FocusTimerViewProps){
             <div className='flex flex-col h-screen justify-center items-center text-center'>
                 <div className="animate-fade-in-up">
                 </div>
-                <CircularProgress timeLeft={timeLeft} totalTime={30}>
+                <CircularProgress timeLeft={timeLeft} totalTime={15}>
                     <h2 className='text-7xl md:text-8xl lg:text-9xl font-bold bg-gradient-to-r bg-clip-text from-rose-400 to-indigo-400 text-transparent tracking-tight '>{formatTime(timeLeft)}</h2>
                     <p className='text-lg md:text-xl text-slate-400 leading-relaxed font-light'>PomoAI</p>
                 </CircularProgress>

@@ -17,8 +17,8 @@ public class PomoSession {
     @JoinColumn(name = "userId")
     private User user;
 
-    @Column
-    private int durationMinutes;
+    @Embedded
+    private PomoSettings pomoSettings;
 
     @Column
     @CreationTimestamp
@@ -37,17 +37,20 @@ public class PomoSession {
     @Column(nullable = false)
     private String accessToken;
 
-    public PomoSession(Long sessionId, User user, int durationMinutes, LocalDateTime timestamp, String questionsJson, String topic, Status status) {
+
+    public PomoSession(Long sessionId, User user, LocalDateTime timestamp, String questionsJson, String topic, Status status) {
         this.sessionId = sessionId;
         this.user = user;
-        this.durationMinutes = durationMinutes;
+        this.pomoSettings = new PomoSettings();
         this.timestamp = timestamp;
         this.questionsJson = questionsJson;
         this.topic = topic;
         this.status = status;
     }
 
-    public PomoSession() {}
+    public PomoSession() {
+        this.pomoSettings = new PomoSettings();
+    }
 
     @PrePersist
     public void generateToken(){
@@ -72,13 +75,9 @@ public class PomoSession {
         this.user = user;
     }
 
-    public int getDurationMinutes() {
-        return durationMinutes;
-    }
+    public PomoSettings getPomoSettings() {return pomoSettings;}
 
-    public void setDurationMinutes(int durationMinutes) {
-        this.durationMinutes = durationMinutes;
-    }
+    public void setPomoSettings(PomoSettings pomoSettings) {}
 
     public LocalDateTime getTimestamp() {
         return timestamp;
