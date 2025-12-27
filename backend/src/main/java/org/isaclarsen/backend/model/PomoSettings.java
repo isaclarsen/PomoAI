@@ -7,7 +7,7 @@ public class PomoSettings {
 
     private int focusMinutes = 25;
     private int relaxMinutes = 5;
-    private int questionCount = 3;
+    private int questionCount = 5;
 
     public PomoSettings() {}
 

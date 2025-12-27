@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import type { QuestionDTO } from "../api/pomoApi";
-import { Loader2, ArrowRight, RefreshCw } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { AppBackground } from "../components/AppBackground";
 import { QuestionCard } from "../components/QuestionCard";
 import { ResultView } from "./ResultView";
