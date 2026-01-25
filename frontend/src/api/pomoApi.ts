@@ -30,11 +30,13 @@ export const startGuestSession = async (topic : string): Promise<SessionResponse
         headers: {
             "Content-type": "application/json",
         },
-        body: JSON.stringify({ topicText: topic })
+        body: JSON.stringify({ topic: topic })
     });
     
         if(!response.ok){
-            throw new Error("Failed to start session");
+            const errorData = await response.json()
+            const errorMessage = errorData.detail || errorData.message || "Failed to start session";
+            throw new Error(errorMessage)
         }
 
         console.log("Successfully started a Pomo Session!")
@@ -51,11 +53,13 @@ export const startUserSession = async (token: string, topic : string): Promise<S
             "Content-type": "application/json",
             "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ topicText: topic })
+        body: JSON.stringify({ topic: topic })
     });
     
         if(!response.ok){
-            throw new Error("Failed to start session");
+            const errorData = await response.json()
+            const errorMessage = errorData.detail || errorData.message || "Failed to start session";
+            throw new Error(errorMessage)
         }
 
         console.log("Successfully started a Pomo Session!")

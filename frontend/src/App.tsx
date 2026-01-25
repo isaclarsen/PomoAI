@@ -38,11 +38,11 @@ function App() {
           navigate('/onboarding')
         }
       }else{
-        if(location.pathname === '/'){
-          navigate('/dashboard')
-        }
+        if(location.pathname === '/' || location.pathname === '/onboarding'){
+          navigate('/dashboard');
       }
     }
+  }
 
   }, [backendUser, isAuthLoading, navigate, location.pathname])
 

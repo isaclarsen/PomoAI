@@ -4,7 +4,7 @@ import java.util.List;
 
 public record GenerateQuestionsResponse(
         String jsonString,
-        List<QuestionsDTO> aiQuestions
+        List<QuestionsDto> aiQuestions
 
 ) {
 }

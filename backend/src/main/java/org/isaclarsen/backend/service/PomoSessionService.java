@@ -39,24 +39,6 @@ public class PomoSessionService {
         this.userRepository = userRepository;
     }
 
-    public CreateSessionResponse createGuestSession(CreateSessionRequest request) {
-        PomoSession pomoSession = new PomoSession();
-        pomoSession.setTopic(request.topicText());
-        pomoSession.setStatus(Status.IN_PROGRESS);
-
-        PomoSettings pomoSettings = new PomoSettings();
-        pomoSession.setPomoSettings(pomoSettings);
-
-        pomoSessionRepository.save(pomoSession);
-
-        return new CreateSessionResponse(
-                pomoSession.getSessionId(),
-                pomoSession.getPomoSettings(),
-                pomoSession.getStatus(),
-                pomoSession.getAccessToken()
-        );
-    }
-
     public CreateSessionResponse createUserSession(CreateSessionRequest request, String firebaseId) {
             User user = userRepository.findByFirebaseId(firebaseId)
                     .orElseThrow(() -> new ResourceNotFoundException("Firebase User not found"));
@@ -84,7 +66,7 @@ public class PomoSessionService {
             throw new InvalidSessionTokenException("Unauthorized: Access Token mismatch for this session");
         }
 
-        List<QuestionsDTO> aiQuestions = null;
+        List<QuestionsDto> aiQuestions = null;
         try {
             Status newStatus = Status.valueOf(request.status());
             pomoToUpdate.setStatus(newStatus);
@@ -110,7 +92,7 @@ public class PomoSessionService {
     }
 
     private GenerateQuestionsResponse generateQuestions(PomoSession pomoToUpdate) throws JsonProcessingException {
-        List<QuestionsDTO> aiQuestions;
+        List<QuestionsDto> aiQuestions;
         String promptText = """
                 You are a strict teacher. Your task is to generate %d study questions based on a topic.
                 
@@ -140,7 +122,7 @@ public class PomoSessionService {
         aiQuestions = chatClient.prompt()
                 .user(promptText)
                 .call()
-                .entity(new ParameterizedTypeReference<List<QuestionsDTO>>() {
+                .entity(new ParameterizedTypeReference<List<QuestionsDto>>() {
                 });
 
         //Converts back to string to save in database
@@ -151,7 +133,7 @@ public class PomoSessionService {
     private static PomoSession initializePomoSession(CreateSessionRequest request, User user) {
         PomoSession pomoSession = new PomoSession();
         pomoSession.setUser(user);
-        pomoSession.setTopic(request.topicText());
+        pomoSession.setTopic(request.topic());
         pomoSession.setStatus(Status.IN_PROGRESS);
 
         PomoSettings userSettings = user.getPomoSettings();

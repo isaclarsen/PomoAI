@@ -1,7 +1,6 @@
 package org.isaclarsen.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,7 +37,6 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(schema = @Schema(implementation = User.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized. Invalid firebase token.", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Unauthorized. Invalid access token for session.", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal server error.", content = @Content)
     })
 
