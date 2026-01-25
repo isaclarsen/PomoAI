@@ -2,6 +2,7 @@ package org.isaclarsen.backend.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.isaclarsen.backend.exception.InvalidSessionTokenException;
 import org.isaclarsen.backend.exception.ResourceNotFoundException;
 import org.isaclarsen.backend.model.PomoSession;
 import org.isaclarsen.backend.model.PomoSettings;
@@ -80,8 +81,7 @@ public class PomoSessionService {
                 });
 
         if(!pomoToUpdate.getAccessToken().equals(request.accessToken())){
-            //TODO: Ändra till 403 senare
-            throw new RuntimeException("Unauthorized: Access Token mismatch for this session");
+            throw new InvalidSessionTokenException("Unauthorized: Access Token mismatch for this session");
         }
 
         List<QuestionsDTO> aiQuestions = null;
@@ -97,9 +97,9 @@ public class PomoSessionService {
             }
 
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status provided: " + request.status());
+            throw new IllegalArgumentException("Invalid status provided: " + request.status());
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Could not save JSON to database.");
+            throw new RuntimeException("Could not save JSON to database.", e);
         }
 
         pomoSessionRepository.save(pomoToUpdate);

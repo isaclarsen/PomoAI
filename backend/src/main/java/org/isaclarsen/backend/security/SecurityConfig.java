@@ -37,6 +37,11 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/guest/**").permitAll();
                     auth.requestMatchers("/api/session/**").permitAll();
                     auth.requestMatchers("/api/user/auth").authenticated();
+                    auth.requestMatchers(
+                            "/swagger-ui.html",
+                            "/swagger-ui/**",
+                            "/v3/api-docs",
+                            "/v3/api-docs/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

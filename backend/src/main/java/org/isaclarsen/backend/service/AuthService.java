@@ -1,9 +1,11 @@
 package org.isaclarsen.backend.service;
 
+import org.isaclarsen.backend.exception.ResourceConflictException;
 import org.isaclarsen.backend.model.User;
 import org.isaclarsen.backend.model.enums.EducationLevel;
 import org.isaclarsen.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -51,8 +53,14 @@ public class AuthService {
                     } else {
                         newUser.setEducationLevel(null);
                     }
-
-                    return userRepository.save(newUser);
+                    return saveUserSafely(newUser);
                 });
+    }
+    private User saveUserSafely(User user){
+        try{
+            return userRepository.save(user);
+        }catch(DataIntegrityViolationException e){
+            throw new ResourceConflictException("User with this email or display name already found.");
+        }
     }
 }

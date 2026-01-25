@@ -15,14 +15,13 @@ import LoadingView from './views/LoadingView';
 import { startGuestSession, updateSessionStatus, startUserSession, type QuestionDTO } from './api/pomoApi';
 import { useAuthSync } from './hooks/useAuthSync'; 
 import { auth } from './firebaseConfig';
-
-type AppView = 'HOME' | 'LOGIN' | 'ONBOARDING' | 'FOCUS_TIMER' | 'RELAX_TIMER' | 'RESULTS';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
 function App() {
   //Get data from useAuthSync hook
   const { backendUser, isAuthLoading, logout, refreshUser} = useAuthSync();
+  const navigate = useNavigate();
 
-  const [currentView, setCurrentView] = useState<AppView>('HOME');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [sessionToken, setSessionToken] = useState<string>("");
@@ -33,17 +32,19 @@ function App() {
     if(isAuthLoading === true) return;
 
     if(backendUser){
-      //User is missing educationLevel, meaning that user has not completed onboarding process
+      //User is missing educationLevel, send to onboarding
       if(backendUser.educationLevel === null){
-        setCurrentView("ONBOARDING")
+        if(location.pathname !== '/onboarding'){
+          navigate('/onboarding')
+        }
       }else{
-        if(currentView === "LOGIN" || currentView === "ONBOARDING"){
-          setCurrentView("HOME")
+        if(location.pathname === '/'){
+          navigate('/dashboard')
         }
       }
     }
 
-  }, [backendUser, isAuthLoading])
+  }, [backendUser, isAuthLoading, navigate, location.pathname])
 
   const handleStartSession = async (incomingTopic: string) => {
       setTopic(incomingTopic);
@@ -58,18 +59,27 @@ function App() {
           setSessionId(data.sessionId);
           setSessionToken(data.accessToken);
         }
-        setCurrentView('FOCUS_TIMER')
+        navigate('/focus')
       } catch (error) { console.error(error); }
   };
 
   const handleTimerFinished = async () => {
       if (!sessionId) return;
-      setCurrentView('RELAX_TIMER');
+      navigate('/relax')
       try {
         const fetchedQuestions = await updateSessionStatus("COMPLETED", sessionToken, sessionId);
         setQuestions(fetchedQuestions);
       } catch (error) { console.error(error); }
   };
+  
+  const handleRelaxFinished = () => {
+    navigate('/questions');
+  }
+
+  const handleReset = () => {
+    setQuestions([]);
+    navigate('/')
+  }
 
   if (isAuthLoading) {
     return <LoadingView/>
@@ -81,40 +91,67 @@ function App() {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+      <Routes>
 
-      {currentView === 'ONBOARDING' && (
-        <>
-          <LandingPage 
-            onStart={handleStartSession} 
-            onLoginClick={() => {}}
-          />
-          <OnboardingModal 
-            onComplete={refreshUser}
-          />
-      </>
-      )}
-
-      {currentView === 'HOME' && (
-        backendUser && backendUser.displayName ? (
-          <Dashboard
-            user={backendUser}
-            onStart={handleStartSession}
-            onLogoutClick={logout}
-          />
-        ) : (
+        {/* LANDING PAGE */}
+        <Route path='/' element={
           <LandingPage
             onStart={handleStartSession}
             onLoginClick={() => setIsLoginModalOpen(true)}
           />
-        )
-      )}
+        } />
 
-      {currentView === 'FOCUS_TIMER' && <FocusTimerView onTimerFinished={handleTimerFinished} currentTopic={topic} />}
-      {currentView === 'RELAX_TIMER' && <RelaxTimerView onTimerFinished={() => setCurrentView('RESULTS')} />}
-      {currentView === 'RESULTS' && <QuestionResultView questions={questions} onReset={() => {
-        setCurrentView('HOME')
-        setQuestions([])
-      }}/>}
+        {/* DASHBOARD */}
+        <Route path='/dashboard' element={
+          backendUser && backendUser.displayName ? (
+            <Dashboard
+              user={backendUser}
+              onStart={handleStartSession}
+              onLogoutClick={logout}
+            />
+          ) : (
+            <Navigate to={"/"} replace />
+          )
+        } />
+
+        {/* ONBOARDING */}
+        <Route path='/onboarding' element={
+          <>
+            <LandingPage 
+              onStart={handleStartSession} 
+              onLoginClick={() => {}}
+            />
+            <OnboardingModal 
+              onComplete={refreshUser}
+            />
+          </>
+        } />
+
+        {/* FOCUS TIMER */}
+        <Route path='/focus' element={
+          <FocusTimerView
+            onTimerFinished={handleTimerFinished}
+            currentTopic={topic}
+          />
+        } />
+
+        {/* RELAX TIMER */}
+        <Route path='/relax' element={
+          <RelaxTimerView
+            onTimerFinished={handleRelaxFinished}
+          />
+        } />
+
+        {/* QUESTIONS PAGE */}
+        <Route path='/questions' element={
+          <QuestionResultView
+            questions={questions}
+            onReset={handleReset}
+          />
+        } />
+        {/* FALLBACK */}
+        <Route path='*' element={<Navigate to={"/"} replace />} />
+      </Routes>
     </>
   );
 }
