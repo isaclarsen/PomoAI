@@ -12,21 +12,19 @@ import Dashboard from './views/Dashboard';
 import LoadingView from './views/LoadingView';
 
 // API & Hooks
-import { startGuestSession, updateSessionStatus, startUserSession, type QuestionDTO } from './api/pomoApi';
 import { useAuthSync } from './hooks/useAuthSync'; 
-import { auth } from './firebaseConfig';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { useSession } from './context/SessionContext';
+import { useDemo } from './context/DemoContext';
 
 function App() {
   //Get data from useAuthSync hook
   const { backendUser, isAuthLoading, logout, refreshUser} = useAuthSync();
-  const navigate = useNavigate();
-
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [sessionId, setSessionId] = useState<number | null>(null);
-  const [sessionToken, setSessionToken] = useState<string>("");
-  const [questions, setQuestions] = useState<QuestionDTO[]>([]);
-  const [topic, setTopic] = useState(""); 
+
+  const navigate = useNavigate();
+  const sessionContext = useSession();
+  const demoContext = useDemo();
 
   useEffect(() => {
     if(isAuthLoading === true) return;
@@ -46,41 +44,6 @@ function App() {
 
   }, [backendUser, isAuthLoading, navigate, location.pathname])
 
-  const handleStartSession = async (incomingTopic: string) => {
-      setTopic(incomingTopic);
-      try {
-        if(!auth.currentUser){
-          const data = await startGuestSession(incomingTopic);
-          setSessionId(data.sessionId);
-          setSessionToken(data.accessToken);
-        }else{
-          const token = await auth.currentUser.getIdToken()
-          const data = await startUserSession(token, incomingTopic);  
-          setSessionId(data.sessionId);
-          setSessionToken(data.accessToken);
-        }
-        navigate('/focus')
-      } catch (error) { console.error(error); }
-  };
-
-  const handleTimerFinished = async () => {
-      if (!sessionId) return;
-      navigate('/relax')
-      try {
-        const fetchedQuestions = await updateSessionStatus("COMPLETED", sessionToken, sessionId);
-        setQuestions(fetchedQuestions);
-      } catch (error) { console.error(error); }
-  };
-  
-  const handleRelaxFinished = () => {
-    navigate('/questions');
-  }
-
-  const handleReset = () => {
-    setQuestions([]);
-    navigate('/')
-  }
-
   if (isAuthLoading) {
     return <LoadingView/>
   }
@@ -96,7 +59,7 @@ function App() {
         {/* LANDING PAGE */}
         <Route path='/' element={
           <LandingPage
-            onStart={handleStartSession}
+            onStart={demoContext.startDemoSession}
             onLoginClick={() => setIsLoginModalOpen(true)}
           />
         } />
@@ -106,7 +69,7 @@ function App() {
           backendUser && backendUser.displayName ? (
             <Dashboard
               user={backendUser}
-              onStart={handleStartSession}
+              onStart={sessionContext.startSession}
               onLogoutClick={logout}
             />
           ) : (
@@ -118,7 +81,7 @@ function App() {
         <Route path='/onboarding' element={
           <>
             <LandingPage 
-              onStart={handleStartSession} 
+              onStart={demoContext.startDemoSession} 
               onLoginClick={() => {}}
             />
             <OnboardingModal 
@@ -130,23 +93,23 @@ function App() {
         {/* FOCUS TIMER */}
         <Route path='/focus' element={
           <FocusTimerView
-            onTimerFinished={handleTimerFinished}
-            currentTopic={topic}
+            onTimerFinished={sessionContext.finishSession}
+            currentTopic={sessionContext.topic}
           />
         } />
 
         {/* RELAX TIMER */}
         <Route path='/relax' element={
           <RelaxTimerView
-            onTimerFinished={handleRelaxFinished}
+            onTimerFinished={sessionContext.finishRelax}
           />
         } />
 
         {/* QUESTIONS PAGE */}
         <Route path='/questions' element={
           <QuestionResultView
-            questions={questions}
-            onReset={handleReset}
+            questions={sessionContext.questions}
+            onReset={sessionContext.resetSession}
           />
         } />
         {/* FALLBACK */}

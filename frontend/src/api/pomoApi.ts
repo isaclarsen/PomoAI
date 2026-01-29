@@ -12,6 +12,11 @@ export interface SessionResponse{
     accessToken: string
 }
 
+export interface DemoResponse{
+    topicText: string,
+    questions: QuestionDTO[]
+}
+
 export interface User{
     userId: number,
     firebaseId: string,
@@ -20,10 +25,10 @@ export interface User{
     educationLevel?: string | null
 }
 
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = import.meta.env.VITE_API_URL_DEV || "http://localhost:8080/api";
 
-export const startGuestSession = async (topic : string): Promise<SessionResponse> => {
-    const url = BASE_URL + "/guest/session/generate"
+export const startDemoSessionApi = async (topic : string): Promise<DemoResponse> => {
+    const url = BASE_URL + "/demo/generate"
 
     const response = await fetch(url, {
         method: "POST",
@@ -35,16 +40,16 @@ export const startGuestSession = async (topic : string): Promise<SessionResponse
     
         if(!response.ok){
             const errorData = await response.json()
-            const errorMessage = errorData.detail || errorData.message || "Failed to start session";
+            const errorMessage = errorData.detail || errorData.message || "Failed to start demo session";
             throw new Error(errorMessage)
         }
 
-        console.log("Successfully started a Pomo Session!")
+        console.log("Successfully started a Pomo Demo Session!")
 
         return response.json();
 }
 
-export const startUserSession = async (token: string, topic : string): Promise<SessionResponse> => {
+export const startUserSessionApi = async (token: string, topic : string): Promise<SessionResponse> => {
     const url = BASE_URL + "/session/generate"
 
     const response = await fetch(url, {
@@ -67,7 +72,7 @@ export const startUserSession = async (token: string, topic : string): Promise<S
         return response.json();
 }
 
-export const updateSessionStatus = async (status : string, sessionToken: string, sessionId : number) : Promise<QuestionDTO[]> => {
+export const updateSessionStatusApi = async (status : string, sessionToken: string, sessionId : number) : Promise<QuestionDTO[]> => {
     const url = BASE_URL + "/session/" + sessionId
 
     const response = await fetch(url, {

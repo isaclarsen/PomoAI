@@ -13,7 +13,7 @@ import org.isaclarsen.backend.service.GuestDemoService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/guest")
+@RequestMapping("/api/demo")
 public class GuestDemoController {
 
     private final GuestDemoService guestService;

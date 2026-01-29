@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { 
     type QuestionDTO, 
-    startGuestSession, 
-    startUserSession, 
-    updateSessionStatus 
+    startDemoSessionApi, 
+    startUserSessionApi, 
+    updateSessionStatusApi 
 } from "../api/pomoApi";
 import { auth } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
 
 interface SessionContextType{
     //Data
@@ -17,6 +18,7 @@ interface SessionContextType{
     //Functions
     startSession: (topic : string) => Promise<void>;
     finishSession: () => Promise<void>;
+    finishRelax: () => void;
     resetSession: () => void;
 }
 
@@ -28,18 +30,22 @@ export function SessionProvider({ children } : { children : ReactNode }){
     const [questions, setQuestions] = useState<QuestionDTO[]>([]);
     const [topic, setTopic] = useState("");
 
+    const navigate = useNavigate();
+
     const startSession = async (incomingTopic: string) => {
         setTopic(incomingTopic);
         try {
             let data;
             if(!auth.currentUser){
-                data = await startGuestSession(incomingTopic);
+                navigate('/')
+                return;
             }else{
                 const token = await auth.currentUser.getIdToken()
-                data = await startUserSession(token, incomingTopic);  
+                data = await startUserSessionApi(token, incomingTopic);  
+                setSessionId(data.sessionId);
+                setSessionToken(data.accessToken);
             }
-            setSessionId(data.sessionId);
-            setSessionToken(data.accessToken);
+            navigate('/focus');
         } catch (error) {
             console.error(error);
             throw error;
@@ -48,17 +54,23 @@ export function SessionProvider({ children } : { children : ReactNode }){
 
     const finishSession = async () => {
         if (!sessionId) return;
+        navigate('/relax')
         try {
-            const fetchedQuestions = await updateSessionStatus("COMPLETED", sessionToken, sessionId);
+            const fetchedQuestions = await updateSessionStatusApi("COMPLETED", sessionToken, sessionId);
             setQuestions(fetchedQuestions);
         } catch (error) { console.error(error); }
     };
+
+    const finishRelax = async () => {
+        navigate('/questions');
+    }
 
     const resetSession = () => {
         setQuestions([]);
         setSessionId(null);
         setSessionToken("");
         setTopic("");
+        navigate('/')
     };
 
     //All values to be sent out
@@ -69,6 +81,7 @@ export function SessionProvider({ children } : { children : ReactNode }){
         questions,
         startSession,
         finishSession,
+        finishRelax,
         resetSession
     };
 
