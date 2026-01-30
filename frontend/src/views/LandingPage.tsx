@@ -5,10 +5,11 @@ import { AppBackground } from '../components/AppBackground';
 
 interface LandingPageProps {
     onStart: (topic: string) => void;
+    resetOnStart: () => void;
     onLoginClick: () => void;
 }
 
-function LandingPage({ onStart, onLoginClick } : LandingPageProps) {
+function LandingPage({ onStart, resetOnStart, onLoginClick } : LandingPageProps) {
     return (
         <div className="min-h-screen bg-[#020202] text-white font-sans selection:bg-rose-500/30 selection:text-rose-200 relative overflow-x-hidden">
 
@@ -21,7 +22,10 @@ function LandingPage({ onStart, onLoginClick } : LandingPageProps) {
             {/* HERO SECTION */}
             <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
                 <HeroHeader/>
-                <HeroSessionInput onStart={onStart}/>
+                <HeroSessionInput 
+                onStart={onStart}
+                resetOnStart={resetOnStart}
+                />
             </main>
 
             {/* Footer */}

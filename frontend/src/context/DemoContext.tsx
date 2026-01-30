@@ -12,7 +12,7 @@ interface DemoContextType{
     topic : string
     topicText : string
 
-    //Functions
+    // Functions
     startDemoSession: (topic : string) => Promise<void>;
     finishDemoSession: () => Promise<void>;
     resetDemoSession: () => void;
@@ -31,21 +31,21 @@ export function DemoProvider({ children } : { children : ReactNode }){
         setTopic(incomingTopic);
         try {
             if(auth.currentUser){
-            navigate('/dashboard')
-            return;
+                navigate('/dashboard')
+                return;
             }
+            navigate('/demo/text')
             const data = await startDemoSessionApi(incomingTopic);
             setTopicText(data.topicText);
             setQuestions(data.questions);
             //TODO:
             // - Skapa demoTextView som renderar ut topic text
             // - Återanvänd questions view för att svara frågorna baserad på texten.
-            // navigate('/demo/text')
         } catch (error) { console.error(error); }
     }; 
 
     const finishDemoSession = async () => {
-        navigate('/questions')
+        navigate('/demo/questions')
     };
 
     const resetDemoSession = () => {

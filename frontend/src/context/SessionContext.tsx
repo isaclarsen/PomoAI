@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { 
     type QuestionDTO, 
-    startDemoSessionApi, 
     startUserSessionApi, 
     updateSessionStatusApi 
 } from "../api/pomoApi";

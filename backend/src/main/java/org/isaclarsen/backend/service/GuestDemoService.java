@@ -68,8 +68,13 @@ public class GuestDemoService {
                 Constraints:
                 - The "topicText" must be factual and educational.
                 - The questions must be answerable based ONLY on the "topicText" provided.
+                - Do NOT use outside knowledge. If a fact is not stated in the topicText, you cannot ask about it.
+                - Ensure every correct answer is explicitly stated in the topicText (not implied).
+                - Self-check: For each question, verify the correct answer is a direct quoteable fact from the topicText.
                 - Question Style: Direct Active Recall (e.g., "What year did X happen?"). Do NOT use "Which of the following...".
                 - Safety: If the topic is inappropriate or nonsense, return a JSON with empty fields.
+                - No overlap: Options must be mutually exclusive; only one can be true.
+                - Plausible but clearly wrong distractors: 3 distractors should be close but factually incorrect; avoid “more specific” vs “less specific” traps.
                 """.formatted(topic);
 
         System.out.println("Generating topic text and questions for demo...");

@@ -3,13 +3,15 @@ import { Sparkles, ArrowRight } from "lucide-react";
 
 interface HeroSessionInputProps {
     onStart: (topic: string) => void;
+    resetOnStart: () => void;
 }
 
-export function HeroSessionInput({ onStart } : HeroSessionInputProps) {
+export function HeroSessionInput({ onStart, resetOnStart } : HeroSessionInputProps) {
     const [topic, setTopic] = useState('');
 
     const handleInputSubmit = () => {
         if(topic.trim()) {
+            resetOnStart();
             onStart(topic);
         }
     }

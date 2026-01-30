@@ -1,6 +1,9 @@
 package org.isaclarsen.backend.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 public class GuestDemo {
@@ -16,6 +19,10 @@ public class GuestDemo {
 
     @Column(columnDefinition = "TEXT")
     private String questionsJson;
+
+    @Column
+    @CreationTimestamp
+    private LocalDateTime timestamp;
 
     public GuestDemo(Long sessionId, String topic, String questionsJson) {
         this.sessionId = sessionId;

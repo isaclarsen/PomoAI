@@ -113,6 +113,10 @@ public class PomoSessionService {
                     - GOOD: "What is the main function of the kidneys?" (Can be answered alone)
                     - DO NOT start questions with "Which of the following...".
                 5. Safety: If the topic is inappropriate, nonsense, or impossible to generate questions for, return an empty JSON list: [].
+                6. Options quality rules:
+                   - All 4 options must use the SAME FORMAT and LEVEL OF SPECIFICITY (e.g., all exact dates, all years, all names).
+                   - Exactly one option is correct; the other three must be clearly incorrect and not partially correct.
+                   - Avoid "trap" ambiguity where a more specific option makes others seem less correct.
                 """.formatted(pomoToUpdate.getPomoSettings().getQuestionCount(), pomoToUpdate.getTopic());
 
 

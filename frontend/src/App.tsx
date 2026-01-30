@@ -10,6 +10,7 @@ import QuestionResultView from './views/QuestionResultView';
 import LoginModal from './components/LoginModal';
 import Dashboard from './views/Dashboard';
 import LoadingView from './views/LoadingView';
+import DemoTextView  from './views/TopicTextView';
 
 // API & Hooks
 import { useAuthSync } from './hooks/useAuthSync'; 
@@ -60,7 +61,24 @@ function App() {
         <Route path='/' element={
           <LandingPage
             onStart={demoContext.startDemoSession}
+            resetOnStart={demoContext.resetDemoSession}
             onLoginClick={() => setIsLoginModalOpen(true)}
+          />
+        } />
+
+        {/* DEMO */}
+        <Route path='/demo/text' element={
+          <DemoTextView 
+          topic={demoContext.topic}
+          topicText={demoContext.topicText}
+          onFinished={demoContext.finishDemoSession}
+          />
+        } />
+
+        <Route path='/demo/questions' element={
+          <QuestionResultView
+            questions={demoContext.questions}
+            onReset={demoContext.resetDemoSession}
           />
         } />
 
@@ -81,7 +99,8 @@ function App() {
         <Route path='/onboarding' element={
           <>
             <LandingPage 
-              onStart={demoContext.startDemoSession} 
+              onStart={demoContext.startDemoSession}
+              resetOnStart={demoContext.resetDemoSession}
               onLoginClick={() => {}}
             />
             <OnboardingModal 
