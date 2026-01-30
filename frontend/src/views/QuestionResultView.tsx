@@ -6,7 +6,7 @@ import { QuestionCard } from "../components/QuestionCard";
 import { ResultView } from "./ResultView";
 
 interface QuestionResultViewProps {
-    onReset: () => void;
+    onReset: (score : number) => void;
     questions: QuestionDTO[];
 }
 
@@ -14,7 +14,7 @@ function QuestionResultView({ onReset, questions }: QuestionResultViewProps) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isOptionsRevealed, setIsOptionsRevealed] = useState(false);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
-    const [score, setScore] = useState(0);
+    const [correctCount, setcorrectCount] = useState(0);
 
     const currentQuestion = questions[currentIndex];
     const isQuizFinished = currentIndex >= questions.length
@@ -31,7 +31,7 @@ function QuestionResultView({ onReset, questions }: QuestionResultViewProps) {
         if (selectedOption !== null) return;
         setSelectedOption(option)
         if(option === currentQuestion.correctAnswer){
-            setScore(score + 1)
+            setcorrectCount(correctCount + 1)
         }
     };
 
@@ -59,7 +59,7 @@ function QuestionResultView({ onReset, questions }: QuestionResultViewProps) {
         
         return (
             <ResultView
-                score={score}
+                correctCount={correctCount}
                 questions={questions}
                 onReset={onReset}
             />

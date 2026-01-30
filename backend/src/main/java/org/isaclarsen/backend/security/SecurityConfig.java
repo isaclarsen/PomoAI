@@ -36,7 +36,7 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     auth.requestMatchers("/api/guest/**").permitAll();
                     auth.requestMatchers("/api/demo/**").permitAll();
-                    auth.requestMatchers("/api/session/**").permitAll();
+                    auth.requestMatchers("/api/session/**").authenticated();
                     auth.requestMatchers("/api/user/auth").authenticated();
                     auth.requestMatchers(
                             "/swagger-ui.html",

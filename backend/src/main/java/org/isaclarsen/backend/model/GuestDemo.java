@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class GuestDemo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long sessionId;
+    private Long demoId;
 
     @Column
     private String topic;
@@ -24,8 +24,8 @@ public class GuestDemo {
     @CreationTimestamp
     private LocalDateTime timestamp;
 
-    public GuestDemo(Long sessionId, String topic, String questionsJson) {
-        this.sessionId = sessionId;
+    public GuestDemo(Long demoId, String topic, String questionsJson) {
+        this.demoId = demoId;
         this.topic = topic;
         this.questionsJson = questionsJson;
     }
@@ -35,11 +35,11 @@ public class GuestDemo {
     }
 
     public Long getSessionId() {
-        return sessionId;
+        return demoId;
     }
 
     public void setSessionId(Long sessionId) {
-        this.sessionId = sessionId;
+        this.demoId = sessionId;
     }
 
     public String getTopic() {

@@ -14,8 +14,10 @@ import org.isaclarsen.backend.repository.UserRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -50,20 +52,15 @@ public class PomoSessionService {
             return new CreateSessionResponse(
                     pomoSession.getSessionId(),
                     pomoSession.getPomoSettings(),
-                    pomoSession.getStatus(),
-                    pomoSession.getAccessToken()
+                    pomoSession.getStatus()
             );
     }
 
-    public UpdateSessionResponse updateSession(Long sessionId, UpdateSessionRequest request) {
-        PomoSession pomoToUpdate = pomoSessionRepository.findById(sessionId)
-                .orElseThrow(() -> {
-                    String message = "Session with id " + sessionId + " not found";
-                    return new ResourceNotFoundException(message);
-                });
+    public UpdateSessionResponse updateSession(String firebaseId, Long sessionId, UpdateSessionRequest request) {
+        PomoSession pomoToUpdate = fetchPomoSession(sessionId);
 
-        if(!pomoToUpdate.getAccessToken().equals(request.accessToken())){
-            throw new InvalidSessionTokenException("Unauthorized: Access Token mismatch for this session");
+        if(!pomoToUpdate.getUser().getFirebaseId().equals(firebaseId)){
+            throw new InvalidSessionTokenException("Unauthorized: Firebase token mismatch for this session");
         }
 
         List<QuestionsDto> aiQuestions = null;
@@ -89,6 +86,24 @@ public class PomoSessionService {
                 "Session with ID: " + sessionId + " successfully updated status to COMPLETED",
                 aiQuestions
         );
+    }
+
+    public ResponseEntity finishSession(String firebaseId, Long sessionId, FinishSessionRequest finishSessionRequest){
+        PomoSession finishedSession = fetchPomoSession(sessionId);
+
+        if(!finishedSession.getUser().getFirebaseId().equals(firebaseId)){
+            throw new InvalidSessionTokenException("Unauthorized: Firebase token mismatch for this session");
+        }
+
+        int wrongCount = finishedSession.getPomoSettings().getQuestionCount() - finishSessionRequest.correctCount();
+
+        finishedSession.setCompletedAt(Instant.now());
+        finishedSession.setCorrectCount(finishSessionRequest.correctCount());
+        finishedSession.setWrongCount(wrongCount);
+
+        pomoSessionRepository.save(finishedSession);
+
+        return ResponseEntity.noContent().build();
     }
 
     private GenerateQuestionsResponse generateQuestions(PomoSession pomoToUpdate) throws JsonProcessingException {
@@ -149,6 +164,14 @@ public class PomoSessionService {
 
         pomoSession.setPomoSettings(sessionSettings);
         return pomoSession;
+    }
+
+    public PomoSession fetchPomoSession(Long sessionId){
+        return pomoSessionRepository.findById(sessionId)
+                .orElseThrow(() -> {
+                    String message = "Session with id " + sessionId + " not found";
+                    return new ResourceNotFoundException(message);
+                });
     }
 
 }

@@ -6,11 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.isaclarsen.backend.model.dto.CreateSessionRequest;
-import org.isaclarsen.backend.model.dto.CreateSessionResponse;
-import org.isaclarsen.backend.model.dto.UpdateSessionRequest;
-import org.isaclarsen.backend.model.dto.UpdateSessionResponse;
+import org.isaclarsen.backend.model.dto.*;
 import org.isaclarsen.backend.service.PomoSessionService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,16 +50,27 @@ public class PomoSessionController {
             @ApiResponse(responseCode = "200", description = "Session updated successfully",
                     content = @Content(schema = @Schema(implementation = UpdateSessionRequest.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request. Invalid Status provided", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access Token mismatch for this session", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Firebase token mismatch for this session", content = @Content),
             @ApiResponse(responseCode = "404", description = "SessionID not found, session does not exist.", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal server error.", content = @Content)
     })
     @PutMapping("/session/{sessionId}")
     public UpdateSessionResponse updateSession(
+            @AuthenticationPrincipal String firebaseId,
             @PathVariable Long sessionId,
             @RequestBody UpdateSessionRequest updateSessionRequest
     )
     {
-        return pomoSessionService.updateSession(sessionId, updateSessionRequest);
+        return pomoSessionService.updateSession(firebaseId, sessionId, updateSessionRequest);
+    }
+
+    @PutMapping("/session/finish/{sessionId}")
+    public ResponseEntity finishSession(
+            @AuthenticationPrincipal String firebaseId,
+            @PathVariable Long sessionId,
+            @RequestBody FinishSessionRequest finishSessionRequest
+    )
+    {
+        return pomoSessionService.finishSession(firebaseId, sessionId, finishSessionRequest);
     }
 }

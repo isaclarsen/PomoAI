@@ -3,12 +3,12 @@ import type { QuestionDTO } from "../api/pomoApi";
 import { AppBackground } from "../components/AppBackground";
 
 interface ResultViewProps {
-    score: number
+    correctCount: number;
     questions: QuestionDTO[];
-    onReset: () => void
+    onReset: (correctCount : number) => void;
 }
 
-export function ResultView({score, questions, onReset} : ResultViewProps){
+export function ResultView({correctCount, questions, onReset} : ResultViewProps){
     return(
         <div className="min-h-screen bg-[#020202] text-white flex flex-col items-center justify-center relative overflow-hidden p-6">
             <AppBackground />
@@ -21,11 +21,11 @@ export function ResultView({score, questions, onReset} : ResultViewProps){
                     
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md">
                     <p className="text-slate-400 text-sm uppercase tracking-widest mb-2">Your result</p>
-                    <p className="text-slate-300">You got {score} out of {questions.length} right</p>
+                    <p className="text-slate-300">You got {correctCount} out of {questions.length} right</p>
                 </div>
 
                 <button 
-                    onClick={onReset}
+                    onClick={() => {onReset(correctCount)}}
                     className="group flex items-center justify-center gap-2 w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-slate-200 transition-all active:scale-95"
                 >
                     <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />

@@ -112,7 +112,7 @@ function App() {
         {/* FOCUS TIMER */}
         <Route path='/focus' element={
           <FocusTimerView
-            onTimerFinished={sessionContext.finishSession}
+            onTimerFinished={sessionContext.updateSession}
             currentTopic={sessionContext.topic}
           />
         } />

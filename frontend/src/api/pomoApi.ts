@@ -8,8 +8,7 @@ export interface QuestionDTO{
 export interface SessionResponse{
     sessionId: number,
     questions: QuestionDTO[],
-    status: string,
-    accessToken: string
+    status: string
 }
 
 export interface DemoResponse{
@@ -44,12 +43,10 @@ export const startDemoSessionApi = async (topic : string): Promise<DemoResponse>
             throw new Error(errorMessage)
         }
 
-        console.log("Successfully started a Pomo Demo Session!")
-
         return response.json();
 }
 
-export const startUserSessionApi = async (token: string, topic : string): Promise<SessionResponse> => {
+export const startUserSessionApi = async (token : string, topic : string): Promise<SessionResponse> => {
     const url = BASE_URL + "/session/generate"
 
     const response = await fetch(url, {
@@ -72,27 +69,49 @@ export const startUserSessionApi = async (token: string, topic : string): Promis
         return response.json();
 }
 
-export const updateSessionStatusApi = async (status : string, sessionToken: string, sessionId : number) : Promise<QuestionDTO[]> => {
+export const updateSessionStatusApi = async (token : string, status : string, sessionId : number) : Promise<QuestionDTO[]> => {
     const url = BASE_URL + "/session/" + sessionId
 
     const response = await fetch(url, {
         method: "PUT",
         headers: {
             "Content-type": "application/json",
+            "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ 
             status: status,
-            accessToken: sessionToken 
         })
     });
 
     if(!response.ok){
         throw new Error("Failed to update status on Pomo Session");
-    }
+    };
 
     const result = await response.json();
 
     return result.questions;
+}
+
+export const finishSessionApi = async(token : string, sessionId : number, correctCount : number) : Promise<void> => {
+    const url = BASE_URL + "/session/finish/" + sessionId;
+
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            correctCount: correctCount,
+        })
+    });
+
+    if(!response.ok){
+        throw new Error("Failed to update data on Pomo Session.")
+    };
+
+    console.log("Updated data.")
+    
 }
 
 export const syncUser = async(token : string, email : string, displayName: string, educationLevel: string) : Promise<User> => {

@@ -8,7 +8,6 @@ import java.util.List;
 public record CreateSessionResponse(
         Long sessionId,
         PomoSettings pomoSettings,
-        Status status,
-        String accessToken
+        Status status
 )
 { }

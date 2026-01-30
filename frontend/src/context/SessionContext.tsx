@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { 
+    finishSessionApi,
     type QuestionDTO, 
     startUserSessionApi, 
     updateSessionStatusApi 
@@ -10,22 +11,21 @@ import { useNavigate } from "react-router-dom";
 interface SessionContextType{
     //Data
     sessionId : number | null,
-    sessionToken : string,
     questions : QuestionDTO[],
     topic : string
 
     //Functions
     startSession: (topic : string) => Promise<void>;
-    finishSession: () => Promise<void>;
+    updateSession: () => Promise<void>;
+    finishSession: (correctCount : number) => Promise<void>;
     finishRelax: () => void;
-    resetSession: () => void;
+    resetSession: (correctCount : number) => void;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export function SessionProvider({ children } : { children : ReactNode }){
     const [sessionId, setSessionId] = useState<number | null>(null);
-    const [sessionToken, setSessionToken] = useState<string>("");
     const [questions, setQuestions] = useState<QuestionDTO[]>([]);
     const [topic, setTopic] = useState("");
 
@@ -42,7 +42,6 @@ export function SessionProvider({ children } : { children : ReactNode }){
                 const token = await auth.currentUser.getIdToken()
                 data = await startUserSessionApi(token, incomingTopic);  
                 setSessionId(data.sessionId);
-                setSessionToken(data.accessToken);
             }
             navigate('/focus');
         } catch (error) {
@@ -51,12 +50,31 @@ export function SessionProvider({ children } : { children : ReactNode }){
         }
     }; 
 
-    const finishSession = async () => {
+    const updateSession = async () => {
         if (!sessionId) return;
         navigate('/relax')
         try {
-            const fetchedQuestions = await updateSessionStatusApi("COMPLETED", sessionToken, sessionId);
-            setQuestions(fetchedQuestions);
+            if(!auth.currentUser){
+                navigate('/');
+                return;
+            }else{
+                const token = await auth.currentUser.getIdToken();
+                const fetchedQuestions = await updateSessionStatusApi(token, "COMPLETED", sessionId);
+                setQuestions(fetchedQuestions);
+            }
+        } catch (error) { console.error(error); }
+    };
+
+    const finishSession = async (correctCount : number) => {
+        if (!sessionId) return;
+        try {
+            if(!auth.currentUser){
+                navigate('/');
+                return;
+            }else{
+                const token = await auth.currentUser.getIdToken();
+                await finishSessionApi(token, sessionId, correctCount);
+            }
         } catch (error) { console.error(error); }
     };
 
@@ -64,10 +82,10 @@ export function SessionProvider({ children } : { children : ReactNode }){
         navigate('/questions');
     }
 
-    const resetSession = () => {
+    const resetSession = async (correctCount : number) => {
+        await finishSession(correctCount);
         setQuestions([]);
         setSessionId(null);
-        setSessionToken("");
         setTopic("");
         navigate('/')
     };
@@ -75,10 +93,10 @@ export function SessionProvider({ children } : { children : ReactNode }){
     //All values to be sent out
     const value = {
         sessionId,
-        sessionToken,
         topic,
         questions,
         startSession,
+        updateSession,
         finishSession,
         finishRelax,
         resetSession
