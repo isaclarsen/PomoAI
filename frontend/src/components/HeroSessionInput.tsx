@@ -2,16 +2,17 @@ import { useState } from "react";
 import { Sparkles, ArrowRight } from "lucide-react";
 
 interface HeroSessionInputProps {
+    isDashboard: boolean;
     onStart: (topic: string) => void;
-    resetOnStart: () => void;
+    resetOnStart?: () => void;
 }
 
-export function HeroSessionInput({ onStart, resetOnStart } : HeroSessionInputProps) {
+export function HeroSessionInput({ onStart, resetOnStart, isDashboard } : HeroSessionInputProps) {
     const [topic, setTopic] = useState('');
 
     const handleInputSubmit = () => {
         if(topic.trim()) {
-            resetOnStart();
+            resetOnStart?.();
             onStart(topic);
         }
     }
@@ -31,9 +32,14 @@ export function HeroSessionInput({ onStart, resetOnStart } : HeroSessionInputPro
                             
             {/* Den roterande ramen */}
             <div className="relative rounded-2xl p-[1.5px] overflow-hidden transition-all duration-300 hover:shadow-[0_0_80px_-20px_rgba(225,29,72,0.4)]">
-                <div
-                    className="absolute inset-0 bg-[conic-gradient(from_90deg_at_50%_50%,#312e81_45%,#e11d48_50%,#312e81_55%)] border-spin-smooth opacity-80 group-hover:opacity-100"
-                />
+                {!isDashboard ? (
+                    <div
+                        className="absolute inset-0 bg-[conic-gradient(from_90deg_at_50%_50%,#312e81_45%,#e11d48_50%,#312e81_55%)] border-spin-smooth opacity-80 group-hover:opacity-100"
+                    />
+
+                ): (
+                    <></>
+                )}
         
                                 
                 {/* Själva input-boxen */}

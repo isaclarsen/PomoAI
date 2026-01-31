@@ -7,9 +7,10 @@ interface LandingPageProps {
     onStart: (topic: string) => void;
     resetOnStart: () => void;
     onLoginClick: () => void;
+    onDashboardClick: () => void;
 }
 
-function LandingPage({ onStart, resetOnStart, onLoginClick } : LandingPageProps) {
+function LandingPage({ onStart, resetOnStart, onLoginClick, onDashboardClick } : LandingPageProps) {
     return (
         <div className="min-h-screen bg-[#020202] text-white font-sans selection:bg-rose-500/30 selection:text-rose-200 relative overflow-x-hidden">
 
@@ -17,7 +18,10 @@ function LandingPage({ onStart, resetOnStart, onLoginClick } : LandingPageProps)
             <AppBackground/>
 
             {/* NAVBAR */}
-            <LandingNavbar onLoginClick={onLoginClick}/>
+            <LandingNavbar
+             onLoginClick={onLoginClick}
+             onDashboardClick={onDashboardClick}
+             />
 
             {/* HERO SECTION */}
             <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
@@ -25,13 +29,14 @@ function LandingPage({ onStart, resetOnStart, onLoginClick } : LandingPageProps)
                 <HeroSessionInput 
                 onStart={onStart}
                 resetOnStart={resetOnStart}
+                isDashboard={false}
                 />
             </main>
 
             {/* Footer */}
             <footer className="fixed bottom-6 w-full text-center z-20 pointer-events-none">
                 <p className="text-xs text-slate-600">
-                    Press <span className="font-mono text-slate-500">Enter</span> to start session
+                    Press <span className="font-mono text-slate-500">Enter</span> to start a Demo Session
                 </p>
             </footer>
         </div>

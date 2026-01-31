@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import logo from '../assets/logo.png';
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface LandingNavbarProps{
     onLoginClick: () => void;
+    onDashboardClick: () => void;
 }
 
-export function LandingNavbar({ onLoginClick } : LandingNavbarProps){
+export function LandingNavbar({ onLoginClick, onDashboardClick } : LandingNavbarProps){
+    const {user, isAuthLoading} = useAuth();
     const [isScrolled, setIsScrolled] = useState(false);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -23,18 +29,29 @@ export function LandingNavbar({ onLoginClick } : LandingNavbarProps){
                 {/* Logotyp */}
                 <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div className="relative flex items-center justify-center w-10 h-10 rounded-lg">
-                        <img src={logo}/>
+                        <img
+                         src={logo}
+                         onClick={() => {navigate('/')}}
+                         />
                     </div>
                     <span className="text-2xl font-bold tracking-tight">PomoAI</span>
                 </div>
 
                     {/* Login Knapp */}
                 <div className="flex items-center gap-3">
+                    {user ? (
+                    <button 
+                        onClick={onDashboardClick} 
+                        className="bg-white text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]">
+                        Go to Dashboard
+                    </button>
+                    ) : (
                     <button 
                         onClick={onLoginClick} 
                         className="bg-white text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]">
                         Log in
                     </button>
+                    )}
                 </div>
             </div>
         </nav>

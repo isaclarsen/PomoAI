@@ -13,14 +13,14 @@ import LoadingView from './views/LoadingView';
 import DemoTextView  from './views/TopicTextView';
 
 // API & Hooks
-import { useAuthSync } from './hooks/useAuthSync'; 
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { useSession } from './context/SessionContext';
 import { useDemo } from './context/DemoContext';
+import { useAuth } from './context/AuthContext';
 
 function App() {
-  //Get data from useAuthSync hook
-  const { backendUser, isAuthLoading, logout, refreshUser} = useAuthSync();
+  //Get data from useAuth hook
+  const { user, isAuthLoading, refreshUser} = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -30,20 +30,16 @@ function App() {
   useEffect(() => {
     if(isAuthLoading === true) return;
 
-    if(backendUser){
+    if(user){
       //User is missing educationLevel, send to onboarding
-      if(backendUser.educationLevel === null){
+      if(user.educationLevel === null){
         if(location.pathname !== '/onboarding'){
           navigate('/onboarding')
         }
-      }else{
-        if(location.pathname === '/' || location.pathname === '/onboarding'){
-          navigate('/dashboard');
       }
-    }
   }
 
-  }, [backendUser, isAuthLoading, navigate, location.pathname])
+  }, [user, isAuthLoading, navigate, location.pathname])
 
   if (isAuthLoading) {
     return <LoadingView/>
@@ -63,6 +59,7 @@ function App() {
             onStart={demoContext.startDemoSession}
             resetOnStart={demoContext.resetDemoSession}
             onLoginClick={() => setIsLoginModalOpen(true)}
+            onDashboardClick={() => navigate('/dashboard')}
           />
         } />
 
@@ -84,11 +81,10 @@ function App() {
 
         {/* DASHBOARD */}
         <Route path='/dashboard' element={
-          backendUser && backendUser.displayName ? (
+          user && user.displayName ? (
             <Dashboard
-              user={backendUser}
+              user={user}
               onStart={sessionContext.startSession}
-              onLogoutClick={logout}
             />
           ) : (
             <Navigate to={"/"} replace />
@@ -102,6 +98,7 @@ function App() {
               onStart={demoContext.startDemoSession}
               resetOnStart={demoContext.resetDemoSession}
               onLoginClick={() => {}}
+              onDashboardClick={() => {}}
             />
             <OnboardingModal 
               onComplete={refreshUser}
