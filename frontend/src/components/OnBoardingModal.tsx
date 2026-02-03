@@ -6,13 +6,18 @@ import logo from '../assets/logo.png';
 import { auth } from "../firebaseConfig";
 
 interface OnboardingViewProps {
+    isOpen: boolean;
     onComplete: (user: BackendUser) => void;
+    onClose: () => void;
+    
 }
 
-export default function OnboardingModal({ onComplete }: OnboardingViewProps) {
+export default function OnboardingModal({ onComplete, isOpen, onClose}: OnboardingViewProps) {
     const [displayName, setDisplayName] = useState("");
     const [educationLevel, setEducationLevel] = useState("HIGH_SCHOOL");
     const [isSubmitting, setIsSubmiting] = useState(false);
+
+    if(!isOpen) return null;
 
     const handleSubmit = async () => {
         if (!auth.currentUser || !displayName.trim()) return;
@@ -24,8 +29,11 @@ export default function OnboardingModal({ onComplete }: OnboardingViewProps) {
             const email = auth.currentUser.email || "";
             const updatedUser = await syncUser(token, email, displayName, educationLevel)
             onComplete(updatedUser);
+            onClose();
         }catch(error){
             console.error("Onboarding failed", error)
+        }finally{
+            setIsSubmiting(false);
         }
     };
 

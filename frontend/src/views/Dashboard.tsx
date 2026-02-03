@@ -1,7 +1,8 @@
 import type { User } from '../api/pomoApi';
 import { AppBackground } from '../components/AppBackground';
 import logo from '../assets/logo.png';
-import { User as UserIcon } from 'lucide-react';
+import { Settings, User as UserIcon, X } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HeroSessionInput } from '../components/HeroSessionInput';
 
@@ -12,6 +13,7 @@ interface DashboardProps {
 
 function Dashboard({ user, onStart }: DashboardProps) {
     const navigate = useNavigate();
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     
     return(
         <div className="min-h-screen bg-[#020202] text-white relative overflow-hidden">
@@ -61,7 +63,17 @@ function Dashboard({ user, onStart }: DashboardProps) {
                         <div className="mt-8 space-y-4">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-white">Start Session</h3>
-                                <span className="text-xs uppercase tracking-widest text-slate-500">Focus mode</span>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs uppercase tracking-widest text-slate-500">Focus mode</span>
+                                    <button
+                                        type="button"
+                                        aria-label="Open session settings"
+                                        onClick={() => setIsSettingsOpen(true)}
+                                        className="w-8 h-8 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center"
+                                    >
+                                        <Settings className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                             <div className="bg-black/30 border border-white/10 rounded-2xl p-6">
                                 <HeroSessionInput onStart={onStart} isDashboard={true}/>
@@ -83,6 +95,89 @@ function Dashboard({ user, onStart }: DashboardProps) {
                     </section>
                 </main>
             </div>
+
+            {isSettingsOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-black/35 backdrop-blur-sm transition-opacity"
+                        onClick={() => setIsSettingsOpen(false)}
+                    />
+                    <div
+                        className="relative w-full max-w-md bg-[#111111] border border-white/5 rounded-3xl shadow-2xl transform transition-all animate-snap-in overflow-hidden"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="pomo-settings-title"
+                    >
+                        <button
+                            onClick={() => setIsSettingsOpen(false)}
+                            className="absolute right-4 top-4 text-slate-500 hover:text-white transition-colors"
+                            aria-label="Close settings"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="p-8 pt-10">
+                            <div className="space-y-2 text-center">
+                                <h2 id="pomo-settings-title" className="text-2xl font-bold text-white">
+                                    Session Settings
+                                </h2>
+                                <p className="text-slate-400 text-sm">
+                                    Adjust your focus rhythm before starting a session.
+                                </p>
+                            </div>
+
+                            <div className="mt-6 space-y-4">
+                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
+                                    Focus Minutes
+                                </label>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    defaultValue={25}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                />
+
+                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
+                                    Relax Minutes
+                                </label>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    defaultValue={5}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                />
+
+                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
+                                    Question Count
+                                </label>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    defaultValue={5}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                />
+                            </div>
+
+                            <div className="mt-8 flex items-center justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsSettingsOpen(false)}
+                                    className="px-4 py-2 rounded-xl border border-white/10 text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsSettingsOpen(false)}
+                                    className="px-4 py-2 rounded-xl bg-white text-black font-semibold hover:bg-slate-200 transition-all"
+                                >
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -3,6 +3,7 @@ package org.isaclarsen.backend.model;
 import jakarta.persistence.*;
 import org.isaclarsen.backend.model.enums.EducationLevel;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -25,17 +26,21 @@ public class User {
     private String displayName;
 
     @Column()
-    private LocalDateTime lastLogin;
+    private Instant createdAt;
+
+    @Column()
+    private Instant lastLogin;
 
     @Embedded
     private PomoSettings pomoSettings;
 
-    public User(Long userId, String firebaseId, String email, EducationLevel educationLevel, String displayName,  LocalDateTime lastLogin) {
+    public User(Long userId, String firebaseId, String email, EducationLevel educationLevel, String displayName, Instant createdAt,  Instant lastLogin) {
         this.userId = userId;
         this.firebaseId = firebaseId;
         this.email = email;
         this.educationLevel = educationLevel;
         this.displayName = displayName;
+        this.createdAt = createdAt;
         this.lastLogin = lastLogin;
     }
 
@@ -82,14 +87,20 @@ public class User {
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
-    public LocalDateTime getLastLogin() {
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+    public Instant getLastLogin() {
         return lastLogin;
     }
-    public void setLastLogin(LocalDateTime lastLogin) {
+    public void setLastLogin(Instant lastLogin) {
         this.lastLogin = lastLogin;
     }
 
     public PomoSettings getPomoSettings() {return pomoSettings;}
 
-    public void setPomoSettings(PomoSettings pomoSettings) {}
+    public void setPomoSettings(PomoSettings pomoSettings) {this.pomoSettings = pomoSettings;}
 }

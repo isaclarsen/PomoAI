@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
@@ -34,7 +35,7 @@ public class AuthService {
                             System.out.println("Invalid education level: " + educationLevel);
                         }
                     }
-                    existingUser.setLastLogin(LocalDateTime.now());
+                    existingUser.setLastLogin(Instant.now());
                     return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> {
@@ -42,7 +43,14 @@ public class AuthService {
                     newUser.setEmail(email);
                     newUser.setFirebaseId(firebaseID);
                     newUser.setDisplayName(displayName);
-                    newUser.setLastLogin(LocalDateTime.now());
+                    newUser.setCreatedAt(Instant.now());
+                    newUser.setLastLogin(Instant.now());
+
+                    if (displayName != null && !displayName.isEmpty()) {
+                        newUser.setDisplayName(displayName);
+                    }else{
+                        newUser.setDisplayName(null);
+                    }
 
                     if (educationLevel != null && !educationLevel.isEmpty()) {
                         try {

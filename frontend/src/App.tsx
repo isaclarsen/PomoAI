@@ -22,6 +22,7 @@ function App() {
   //Get data from useAuth hook
   const { user, isAuthLoading, refreshUser} = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   const navigate = useNavigate();
   const sessionContext = useSession();
@@ -33,13 +34,11 @@ function App() {
     if(user){
       //User is missing educationLevel, send to onboarding
       if(user.educationLevel === null){
-        if(location.pathname !== '/onboarding'){
-          navigate('/onboarding')
-        }
+        setIsOnboardingModalOpen(true);
       }
   }
 
-  }, [user, isAuthLoading, navigate, location.pathname])
+  }, [user, isAuthLoading, navigate])
 
   if (isAuthLoading) {
     return <LoadingView/>
@@ -51,6 +50,13 @@ function App() {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+
+      <OnboardingModal 
+        isOpen={isOnboardingModalOpen}
+        onComplete={refreshUser}
+        onClose={() => setIsOnboardingModalOpen(false)}
+      />
+
       <Routes>
 
         {/* LANDING PAGE */}
@@ -89,21 +95,6 @@ function App() {
           ) : (
             <Navigate to={"/"} replace />
           )
-        } />
-
-        {/* ONBOARDING */}
-        <Route path='/onboarding' element={
-          <>
-            <LandingPage 
-              onStart={demoContext.startDemoSession}
-              resetOnStart={demoContext.resetDemoSession}
-              onLoginClick={() => {}}
-              onDashboardClick={() => {}}
-            />
-            <OnboardingModal 
-              onComplete={refreshUser}
-            />
-          </>
         } />
 
         {/* FOCUS TIMER */}
