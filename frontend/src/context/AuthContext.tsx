@@ -1,7 +1,8 @@
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { auth } from "../firebaseConfig";
-import { syncUser, type User } from "../api/pomoApi";
+import type { User } from "../api/types";
+import { syncUser } from "../api/authApi";
 
 interface AuthContextType{
     user: User | null

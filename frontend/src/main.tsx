@@ -6,16 +6,19 @@ import { SessionProvider } from './context/SessionContext.tsx'
 import { BrowserRouter } from 'react-router-dom'
 import { DemoProvider } from './context/DemoContext.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
+import { UserProvider } from './context/UserContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <SessionProvider>
-            <DemoProvider>
-              <App />
-            </DemoProvider>
-        </SessionProvider>
+        <UserProvider>
+          <SessionProvider>
+              <DemoProvider>
+                <App />
+              </DemoProvider>
+          </SessionProvider>
+        </UserProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

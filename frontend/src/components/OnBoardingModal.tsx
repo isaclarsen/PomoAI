@@ -1,13 +1,14 @@
-import { ArrowRight, GraduationCap, User } from "lucide-react";
+import { ArrowRight, GraduationCap } from "lucide-react";
 import { useState } from "react";
-import { syncUser, type User as BackendUser } from "../api/pomoApi";
 
 import logo from '../assets/logo.png';
 import { auth } from "../firebaseConfig";
+import { syncUser } from "../api/authApi";
+import type { User } from "../api/types";
 
 interface OnboardingViewProps {
     isOpen: boolean;
-    onComplete: (user: BackendUser) => void;
+    onComplete: (user: User) => void;
     onClose: () => void;
     
 }
@@ -63,7 +64,7 @@ export default function OnboardingModal({ onComplete, isOpen, onClose}: Onboardi
                             What should we call you?
                         </label>
                             <div className="relative">
-                                <User className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
+                                {/* <User className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" /> */}
                                 <input
                                     type="text"
                                     value={displayName}

@@ -160,14 +160,16 @@ public class PomoSessionService {
         PomoSettings sessionSettings = new PomoSettings();
 
         //If any of the values is changed, set the new value.
-        if(request.focusMinutes() != null){
-            sessionSettings.setFocusMinutes(request.focusMinutes());
-        }
-        if(request.relaxMinutes() != null){
-            sessionSettings.setRelaxMinutes(request.relaxMinutes());
-        }
-        if(request.questionCount() != null){
-            sessionSettings.setQuestionCount(request.questionCount());
+        if(request.pomoSettings() != null){
+            if(request.pomoSettings().focusMinutes() != null){
+                sessionSettings.setFocusMinutes(request.pomoSettings().focusMinutes());
+            }
+            if(request.pomoSettings().relaxMinutes() != null){
+                sessionSettings.setRelaxMinutes(request.pomoSettings().relaxMinutes());
+            }
+            if(request.pomoSettings().questionCount() != null) {
+                sessionSettings.setQuestionCount(request.pomoSettings().questionCount());
+            }
         }
 
         pomoSession.setPomoSettings(sessionSettings);

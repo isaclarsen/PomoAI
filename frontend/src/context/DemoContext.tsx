@@ -1,10 +1,8 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { 
-    startDemoSessionApi,
-    type QuestionDTO, 
-} from "../api/pomoApi";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebaseConfig";
+import type { QuestionDTO } from "../api/types";
+import { startDemoSessionApi } from "../api/demoApi";
 
 interface DemoContextType{
     //Data

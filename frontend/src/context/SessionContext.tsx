@@ -1,18 +1,15 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { 
-    finishSessionApi,
-    type QuestionDTO, 
-    startUserSessionApi, 
-    updateSessionStatusApi 
-} from "../api/pomoApi";
 import { auth } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import type { QuestionDTO } from "../api/types";
+import { finishSessionApi, startUserSessionApi, updateSessionStatusApi } from "../api/sessionApi";
+import { useUser } from "./UserContext";
 
 interface SessionContextType{
     //Data
-    sessionId : number | null,
-    questions : QuestionDTO[],
-    topic : string
+    sessionId : number | null;
+    questions : QuestionDTO[];
+    topic : string;
 
     //Functions
     startSession: (topic : string) => Promise<void>;
@@ -30,6 +27,7 @@ export function SessionProvider({ children } : { children : ReactNode }){
     const [topic, setTopic] = useState("");
 
     const navigate = useNavigate();
+    const { pomoSettings } = useUser();
 
     const startSession = async (incomingTopic: string) => {
         setTopic(incomingTopic);
@@ -40,7 +38,10 @@ export function SessionProvider({ children } : { children : ReactNode }){
                 return;
             }else{
                 const token = await auth.currentUser.getIdToken()
-                data = await startUserSessionApi(token, incomingTopic);  
+                data = await startUserSessionApi(token, {
+                    topic: incomingTopic,
+                    pomoSettings: pomoSettings
+                });  
                 setSessionId(data.sessionId);
             }
             navigate('/focus');
@@ -82,6 +83,7 @@ export function SessionProvider({ children } : { children : ReactNode }){
         navigate('/questions');
     }
 
+    
     const resetSession = async (correctCount : number) => {
         await finishSession(correctCount);
         setQuestions([]);
@@ -89,7 +91,8 @@ export function SessionProvider({ children } : { children : ReactNode }){
         setTopic("");
         navigate('/')
     };
-
+    
+    
     //All values to be sent out
     const value = {
         sessionId,

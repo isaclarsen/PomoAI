@@ -1,5 +1,5 @@
 import { Eye, CheckCircle2, XCircle } from "lucide-react";
-import type { QuestionDTO } from "../api/pomoApi";
+import type { QuestionDTO } from "../api/types";
 
 interface QuestionCardProps {
     question: QuestionDTO;

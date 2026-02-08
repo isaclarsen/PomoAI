@@ -1,5 +1,6 @@
 package org.isaclarsen.backend.repository;
 
+import org.isaclarsen.backend.model.PomoSettings;
 import org.isaclarsen.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

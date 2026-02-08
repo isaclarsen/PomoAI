@@ -1,10 +1,12 @@
-import type { User } from '../api/pomoApi';
+
 import { AppBackground } from '../components/AppBackground';
 import logo from '../assets/logo.png';
 import { Settings, User as UserIcon, X } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HeroSessionInput } from '../components/HeroSessionInput';
+import type { PomoSettings, User } from '../api/types';
+import { useUser } from '../context/UserContext';
 
 interface DashboardProps {
     user: User;
@@ -13,7 +15,35 @@ interface DashboardProps {
 
 function Dashboard({ user, onStart }: DashboardProps) {
     const navigate = useNavigate();
+    const { pomoSettings, savePomoSettings } = useUser();
+    const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [settingsDraft, setSettingsDraft] = useState<PomoSettings>(pomoSettings);
+
+    const openSettingsModal = () => {
+        setError("");
+        setMessage("");
+        setSettingsDraft(pomoSettings);
+        setIsSettingsOpen(true);
+    };
+
+    const updateDraftValue = (key: keyof PomoSettings, rawValue: string) => {
+        const parsedValue = Number(rawValue);
+        if (Number.isNaN(parsedValue)) return;
+        setSettingsDraft((prev) => ({ ...prev, [key]: parsedValue }));
+    };
+
+    const saveSettings = async () => {
+        setMessage("");
+        setError("");
+        try{
+            await savePomoSettings(settingsDraft)
+            setMessage("Successfully saved Pomo Settings")
+        }catch(error){
+            setError(error instanceof Error ? error.message : "Failed to save Pomo Settings, try again")
+        }
+    };
     
     return(
         <div className="min-h-screen bg-[#020202] text-white relative overflow-hidden">
@@ -68,7 +98,7 @@ function Dashboard({ user, onStart }: DashboardProps) {
                                     <button
                                         type="button"
                                         aria-label="Open session settings"
-                                        onClick={() => setIsSettingsOpen(true)}
+                                        onClick={openSettingsModal}
                                         className="w-8 h-8 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center"
                                     >
                                         <Settings className="w-4 h-4" />
@@ -126,14 +156,15 @@ function Dashboard({ user, onStart }: DashboardProps) {
                                 </p>
                             </div>
 
-                            <div className="mt-6 space-y-4">
+                            <div className="mt-4 space-y-4">
                                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
                                     Focus Minutes
                                 </label>
                                 <input
                                     type="number"
-                                    min={1}
-                                    defaultValue={25}
+                                    min={3}
+                                    value={settingsDraft.focusMinutes}
+                                    onChange={(e) => updateDraftValue("focusMinutes", e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                                 />
 
@@ -143,7 +174,8 @@ function Dashboard({ user, onStart }: DashboardProps) {
                                 <input
                                     type="number"
                                     min={1}
-                                    defaultValue={5}
+                                    value={settingsDraft.relaxMinutes}
+                                    onChange={(e) => updateDraftValue("relaxMinutes", e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                                 />
 
@@ -153,10 +185,17 @@ function Dashboard({ user, onStart }: DashboardProps) {
                                 <input
                                     type="number"
                                     min={1}
-                                    defaultValue={5}
+                                    value={settingsDraft.questionCount}
+                                    onChange={(e) => updateDraftValue("questionCount", e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                                 />
                             </div>
+                            {error && (
+                                <span className='text-sm text-red-500'>{error}</span>
+                            )}
+                            {message && (
+                                <span className='text-sm text-green-500'>{message}</span>
+                            )}
 
                             <div className="mt-8 flex items-center justify-end gap-3">
                                 <button
@@ -168,7 +207,7 @@ function Dashboard({ user, onStart }: DashboardProps) {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setIsSettingsOpen(false)}
+                                    onClick={saveSettings}
                                     className="px-4 py-2 rounded-xl bg-white text-black font-semibold hover:bg-slate-200 transition-all"
                                 >
                                     Save

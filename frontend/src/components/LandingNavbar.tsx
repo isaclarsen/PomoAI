@@ -9,7 +9,7 @@ interface LandingNavbarProps{
 }
 
 export function LandingNavbar({ onLoginClick, onDashboardClick } : LandingNavbarProps){
-    const {user, isAuthLoading} = useAuth();
+    const {user} = useAuth();
     const [isScrolled, setIsScrolled] = useState(false);
 
     const navigate = useNavigate();

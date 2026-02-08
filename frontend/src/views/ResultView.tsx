@@ -1,6 +1,6 @@
 import { RefreshCw } from "lucide-react";
-import type { QuestionDTO } from "../api/pomoApi";
 import { AppBackground } from "../components/AppBackground";
+import type { QuestionDTO } from "../api/types";
 
 interface ResultViewProps {
     correctCount: number;
