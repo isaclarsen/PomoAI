@@ -17,6 +17,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -106,6 +107,22 @@ public class PomoSessionService {
         return ResponseEntity.noContent().build();
     }
 
+    public List<GetUserSessionsResponse> getUserSessionsResponse(String firebaseId){
+        List<PomoSession> pomoSessions = pomoSessionRepository.findAllByUser_FirebaseIdOrderByCreatedAtDesc(firebaseId);
+
+        return pomoSessions.stream()
+                .map(pomoSession -> new GetUserSessionsResponse(
+                        pomoSession.getTopic(),
+                        pomoSession.getWrongCount(),
+                        pomoSession.getCorrectCount(),
+                        pomoSession.getCreatedAt(),
+                        calculateDurationSeconds(pomoSession),
+                        pomoSession.getPomoSettings()
+                ))
+                .toList();
+
+    }
+
     private GenerateQuestionsResponse generateQuestions(PomoSession pomoToUpdate) throws JsonProcessingException {
         List<QuestionsDto> aiQuestions;
         String promptText = """
@@ -174,6 +191,18 @@ public class PomoSessionService {
 
         pomoSession.setPomoSettings(sessionSettings);
         return pomoSession;
+    }
+
+    private Long calculateDurationSeconds(PomoSession pomoSession){
+        Instant startedAt = pomoSession.getCreatedAt();
+        Instant completedAt = pomoSession.getCompletedAt();
+
+        if(startedAt == null || completedAt == null){
+            return null;
+        }
+
+        long seconds = Duration.between(startedAt, completedAt).getSeconds();
+        return Math.max(seconds, 0L);
     }
 
     public PomoSession fetchPomoSession(Long sessionId){

@@ -5,7 +5,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.isaclarsen.backend.model.enums.Status;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Entity
 public class PomoSession {
@@ -22,7 +21,7 @@ public class PomoSession {
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private Instant startedAt;
+    private Instant createdAt;
 
     @Column
     private Instant completedAt;
@@ -43,11 +42,11 @@ public class PomoSession {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public PomoSession(Long sessionId, User user, PomoSettings pomoSettings, Instant startedAt, Instant completedAt, String questionsJson, int correctCount, int wrongCount, String topic, Status status) {
+    public PomoSession(Long sessionId, User user, PomoSettings pomoSettings, Instant createdAt, Instant completedAt, String questionsJson, int correctCount, int wrongCount, String topic, Status status) {
         this.sessionId = sessionId;
         this.user = user;
         this.pomoSettings = pomoSettings;
-        this.startedAt = startedAt;
+        this.createdAt = createdAt;
         this.completedAt = completedAt;
         this.questionsJson = questionsJson;
         this.correctCount = correctCount;
@@ -84,12 +83,12 @@ public class PomoSession {
         this.pomoSettings = pomoSettings;
     }
 
-    public Instant getStartedAt() {
-        return startedAt;
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
-    public void setStartedAt(Instant startedAt) {
-        this.startedAt = startedAt;
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Instant getCompletedAt() {

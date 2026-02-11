@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidSessionTokenException.class)
     public ProblemDetail handleInvalidSessionToken(InvalidSessionTokenException e) {
-        var pd = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        var pd = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         pd.setTitle("Access Denied");
         pd.setDetail(e.getMessage());
         return pd;
