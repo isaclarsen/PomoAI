@@ -45,7 +45,18 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleValidationErrors(MethodArgumentNotValidException ex) {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         pd.setTitle("Validation Error");
-        String errorMessage = ex.getBindingResult().getFieldError().getDefaultMessage();
+
+        var fieldError = ex.getBindingResult().getFieldError();
+        var globalError = ex.getBindingResult().getGlobalError();
+
+        String errorMessage;
+        if (fieldError != null && fieldError.getDefaultMessage() != null) {
+            errorMessage = fieldError.getDefaultMessage();
+        } else if (globalError != null && globalError.getDefaultMessage() != null) {
+            errorMessage = globalError.getDefaultMessage();
+        } else {
+            errorMessage = "Invalid request body.";
+        }
         pd.setDetail(errorMessage);
         return pd;
     }

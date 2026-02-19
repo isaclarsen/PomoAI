@@ -3,7 +3,7 @@ export interface User{
     userId: number;
     firebaseId: string;
     email: string;
-    displayName?: string;
+    displayName?: string | null;
     educationLevel?: string | null;
     pomoSettings: PomoSettings;
 }
@@ -45,4 +45,9 @@ export interface GetUserSessionsResponse{
     createdAt: Date;
     durationSeconds: number;
     pomoSettings: PomoSettings;
+}
+
+//---------- Error types ----------
+export interface ProblemDetail {
+    detail?: string;
 }

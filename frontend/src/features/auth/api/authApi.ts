@@ -1,11 +1,13 @@
+import { toApiError } from "../../../shared/api/errors";
 import type { User } from "../../../shared/api/types";
 
 const BASE_URL = import.meta.env.VITE_API_URL_DEV || "http://localhost:8080/api/";
 
-export const syncUser = async(token : string,
-    email : string,
-    displayName: string,
-    educationLevel: string
+export const syncUser = async(
+    token: string,
+    email: string,
+    displayName?: string | null,
+    educationLevel?: string | null
 ) : Promise<User> => {
     const url = BASE_URL + "auth/sync"
 
@@ -23,10 +25,7 @@ export const syncUser = async(token : string,
     });
 
     if(!response.ok){
-        throw new Error("Failed to sync user")
+        await toApiError(response, `Failed to sync user: ${response.status}`)
     }
-
-    const result = await response.json()
-
-    return result;
+    return await response.json()
 }

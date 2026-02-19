@@ -3,10 +3,12 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { auth } from "../../../shared/config/firebaseConfig";
 import type { User } from "../../../shared/api/types";
 import { syncUser } from "../api/authApi";
+import { ApiError } from "../../../shared/api/errors";
 
 interface AuthContextType{
     user: User | null
     isAuthLoading: boolean;
+    authError: string;
     logout: () => Promise<void>;
     refreshUser: (updatedUser : User) => void;
 }
@@ -16,6 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children } : { children : ReactNode }){
 
     const [isAuthLoading, setIsAuthLoading] = useState(true);
+    const [authError, setAuthError] = useState<string>("");
     const [user, setUser] = useState<User | null>(null)
 
     useEffect(() => {
@@ -23,15 +26,27 @@ export function AuthProvider({ children } : { children : ReactNode }){
             if(fireBaseUser){
                 try{
                     const token = await fireBaseUser.getIdToken();
-                    const userFromDB = await syncUser(token, fireBaseUser.email || "", "", "");
+                    if(fireBaseUser.email == null){
+                        throw new Error("Email cannot be empty or null.")
+                    }
+                    const userFromDB = await syncUser(token, fireBaseUser.email, null, null);
                     setUser(userFromDB);
                 }catch(error){
-                    console.log("Sync with DB failed: " + error)
-                    await logout();
+                    if(error instanceof ApiError){
+                        if(error.status === 401){
+                            await logout();
+                        }else{
+                            setAuthError("Sync with DB failed: " + error)
+                        }
+                    }else {
+                        setAuthError("Unexpected sync error: " + error)
+                        await logout();
+                    }
                 }
             }else{
                 setUser(null);
             }
+            setAuthError("");
             setIsAuthLoading(false);
         });
         return () => unsubscribe();
@@ -40,7 +55,8 @@ export function AuthProvider({ children } : { children : ReactNode }){
 
     const logout = async () => {
         await signOut(auth);
-        setUser(null)
+        setAuthError("");
+        setUser(null);
     }
 
     const refreshUser = (updatedUser : User) => {
@@ -51,6 +67,7 @@ export function AuthProvider({ children } : { children : ReactNode }){
     const value = {
         user,
         isAuthLoading,
+        authError,
         logout,
         refreshUser
     };

@@ -18,6 +18,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children } : { children : ReactNode }){
     const [pomoSettings, setPomoSettings] = useState<PomoSettings>(DEFAULT_POMO_SETTINGS);
+
     const { user, refreshUser } = useAuth();
 
     useEffect(() => {

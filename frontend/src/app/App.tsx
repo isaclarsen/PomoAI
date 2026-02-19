@@ -20,7 +20,7 @@ import { useAuth } from '../features/auth/context/AuthContext';
 
 function App() {
   //Get data from useAuth hook
-  const { user, isAuthLoading, refreshUser} = useAuth();
+  const { user, isAuthLoading, refreshUser, logout} = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
@@ -66,6 +66,7 @@ function App() {
             resetOnStart={demoContext.resetDemoSession}
             onLoginClick={() => setIsLoginModalOpen(true)}
             onDashboardClick={() => navigate('/dashboard')}
+            user={user}
           />
         } />
 
@@ -91,6 +92,7 @@ function App() {
             <Dashboard
               user={user}
               onStart={sessionContext.startSession}
+              onLogout={logout}
             />
           ) : (
             <Navigate to={"/"} replace />

@@ -1,3 +1,4 @@
+import { toApiError } from "../../../shared/api/errors";
 import type { PomoSettings } from "../../../shared/api/types";
 
 const BASE_URL = import.meta.env.VITE_API_URL_DEV || "http://localhost:8080/api/";
@@ -14,7 +15,7 @@ export const getUserPomoSettingsApi = async(token: string) : Promise<PomoSetting
     });
 
     if(!response.ok){
-        throw new Error("Failed to fetch Pomo Settings")
+        await toApiError(response, `Failed to fetch Pomo Settings: ${response.status}`);
     }
 
     const result = await response.json()
@@ -37,8 +38,7 @@ export const updateUserPomoSettingsApi = async(token: string, patch: PomoSetting
     });
 
     if(!response.ok){
-        const text = await response.text();
-        throw new Error(`Failed to patch Pomo Settings: ${response.status} ${text}`)
+        await toApiError(response, `Failed to patch Pomo Settings: ${response.status}`);
     }
 
     const result = await response.json()

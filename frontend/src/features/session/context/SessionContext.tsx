@@ -4,15 +4,17 @@ import { useNavigate } from "react-router-dom";
 import type { GetUserSessionsResponse, QuestionDTO } from "../../../shared/api/types";
 import { finishSessionApi, startUserSessionApi, updateSessionStatusApi, getUserSessionHistoryApi } from "../api/sessionApi";
 import { useUser } from "../../../domains/user/context/UserContext";
+import { ApiError } from "../../../shared/api/errors";
 
 interface SessionContextType{
     //Data
-    sessionId : number | null;
-    questions : QuestionDTO[];
-    topic : string;
-    history : GetUserSessionsResponse[];
-    isHistoryLoading : boolean;
-    historyError : string | null;
+    sessionId: number | null;
+    questions: QuestionDTO[];
+    topic: string;
+    sessionError: string;
+    history: GetUserSessionsResponse[];
+    isHistoryLoading: boolean;
+    historyError: string | null;
 
     //Functions
     startSession: (topic : string) => Promise<void>;
@@ -26,9 +28,11 @@ interface SessionContextType{
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export function SessionProvider({ children } : { children : ReactNode }){
+    // Sessions
     const [sessionId, setSessionId] = useState<number | null>(null);
     const [questions, setQuestions] = useState<QuestionDTO[]>([]);
     const [topic, setTopic] = useState("");
+    const [sessionError, setSessionError] = useState<string>("");
 
     // History
     const [history, setHistory] = useState<GetUserSessionsResponse[]>([]);
@@ -39,6 +43,7 @@ export function SessionProvider({ children } : { children : ReactNode }){
     const { pomoSettings } = useUser();
 
     const startSession = async (incomingTopic: string) => {
+        setSessionError("");
         setTopic(incomingTopic);
         try {
             let data;
@@ -55,14 +60,17 @@ export function SessionProvider({ children } : { children : ReactNode }){
             }
             navigate('/focus');
         } catch (error) {
-            console.error(error);
-            throw error;
+            if(error instanceof ApiError){
+                setSessionError(error.detail);
+            }else{
+                setSessionError("Something went wrong. Please try again.")
+            }
         }
     }; 
 
     const updateSession = async () => {
+        setSessionError("");
         if (!sessionId) return;
-        navigate('/relax')
         try {
             if(!auth.currentUser){
                 navigate('/');
@@ -72,10 +80,18 @@ export function SessionProvider({ children } : { children : ReactNode }){
                 const fetchedQuestions = await updateSessionStatusApi(token, "COMPLETED", sessionId);
                 setQuestions(fetchedQuestions);
             }
-        } catch (error) { console.error(error); }
+        }  catch (error) {
+            if(error instanceof ApiError){
+                setSessionError(error.detail);
+            }else{
+                setSessionError("Something went wrong. Please try again.")
+            }
+        }
+        navigate('/relax')
     };
 
     const finishSession = async (correctCount : number) => {
+        setSessionError("");
         if (!sessionId) return;
         try {
             if(!auth.currentUser){
@@ -85,15 +101,23 @@ export function SessionProvider({ children } : { children : ReactNode }){
                 const token = await auth.currentUser.getIdToken();
                 await finishSessionApi(token, sessionId, correctCount);
             }
-        } catch (error) { console.error(error); }
+        } catch (error) {
+            if(error instanceof ApiError){
+                setSessionError(error.detail);
+            }else{
+                setSessionError("Something went wrong. Please try again.")
+            }
+        }
     };
 
     const finishRelax = async () => {
+        setSessionError("");
         navigate('/questions');
     }
     
     const resetSession = async (correctCount : number) => {
         await finishSession(correctCount);
+        setSessionError("");
         setQuestions([]);
         setSessionId(null);
         setTopic("");
@@ -111,7 +135,6 @@ export function SessionProvider({ children } : { children : ReactNode }){
             const fetchedHistory = await getUserSessionHistoryApi(token)
             setHistory(fetchedHistory);
         } catch (error){
-            console.error("Failed to fetch session history.", error);
             setHistoryError("Failed to fetch session history.")
         }finally{
             setIsHistoryLoading(false);
@@ -123,6 +146,7 @@ export function SessionProvider({ children } : { children : ReactNode }){
         sessionId,
         topic,
         questions,
+        sessionError,
         history,
         isHistoryLoading,
         historyError,

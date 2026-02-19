@@ -1,3 +1,4 @@
+import { toApiError } from "../../../shared/api/errors";
 import type { GetUserSessionsResponse, QuestionDTO, StartSessionRequest, StartSessionResponse } from "../../../shared/api/types";
 
 const BASE_URL = import.meta.env.VITE_API_URL_DEV || "http://localhost:8080/api/";
@@ -18,9 +19,7 @@ export const startUserSessionApi = async (
     });
     
         if(!response.ok){
-            const errorData = await response.json()
-            const errorMessage = errorData.detail || errorData.message || "Failed to start session";
-            throw new Error(errorMessage)
+            await toApiError(response, `Failed to start Pomo Session: ${response.status}`)
         }
 
         return response.json();
@@ -45,7 +44,7 @@ export const updateSessionStatusApi = async (
     });
 
     if(!response.ok){
-        throw new Error("Failed to update status on Pomo Session");
+        await toApiError(response, `Failed to update status on Pomo Session: ${response.status}`);
     };
 
     const result = await response.json();
@@ -71,7 +70,7 @@ export const finishSessionApi = async(token : string,
     });
 
     if(!response.ok){
-        throw new Error("Failed to update data on Pomo Session.")
+        await toApiError(response, `Failed to update data on Pomo Session: ${response.status}`);
     };
 }
 
@@ -87,7 +86,7 @@ export const getUserSessionHistoryApi = async(token: string) : Promise<GetUserSe
     });
 
     if(!response.ok){
-        throw new Error("Failed to fetch user pomo history")
+        await toApiError(response, `Failed to fetch user pomo history: ${response.status}`)
     }
 
     const result = response.json();

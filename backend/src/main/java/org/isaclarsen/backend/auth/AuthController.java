@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.isaclarsen.backend.user.model.User;
 import org.isaclarsen.backend.auth.dto.AuthRequest;
 import org.isaclarsen.backend.auth.AuthService;
@@ -38,7 +39,8 @@ public class AuthController {
     })
 
     @PostMapping("/sync")
-    public User syncUser(@AuthenticationPrincipal String firebaseId, @RequestBody AuthRequest authRequest) {
+    public User syncUser(@AuthenticationPrincipal String firebaseId,
+                         @Valid @RequestBody AuthRequest authRequest) {
         return authService.syncUser(firebaseId, authRequest.email(), authRequest.displayName(), authRequest.educationLevel());
     }
 

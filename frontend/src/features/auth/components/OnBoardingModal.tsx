@@ -5,6 +5,7 @@ import logo from '../../../shared/assets/logo.png';
 import { auth } from "../../../shared/config/firebaseConfig";
 import { syncUser } from "../api/authApi";
 import type { User } from "../../../shared/api/types";
+import { ApiError } from "../../../shared/api/errors";
 
 interface OnboardingViewProps {
     isOpen: boolean;
@@ -17,21 +18,37 @@ export default function OnboardingModal({ onComplete, isOpen, onClose}: Onboardi
     const [displayName, setDisplayName] = useState("");
     const [educationLevel, setEducationLevel] = useState("HIGH_SCHOOL");
     const [isSubmitting, setIsSubmiting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     if(!isOpen) return null;
 
     const handleSubmit = async () => {
-        if (!auth.currentUser || !displayName.trim()) return;
+        setSubmitError(null);
+        const normalizedDisplayName = displayName.trim();
+        if (!auth.currentUser || !normalizedDisplayName) return;
 
         setIsSubmiting(true);
 
         try{
             const token = await auth.currentUser.getIdToken();
-            const email = auth.currentUser.email || "";
-            const updatedUser = await syncUser(token, email, displayName, educationLevel)
+            if(auth.currentUser.email == null){
+                throw new Error("Email cannot be empty or null.")
+            }
+            const updatedUser = await syncUser(token, auth.currentUser.email, normalizedDisplayName, educationLevel)
             onComplete(updatedUser);
             onClose();
         }catch(error){
+            if(error instanceof ApiError) {
+                if(error.status === 409){
+                    setSubmitError("Display name is already taken");
+                } else if(error.status === 400){
+                    setSubmitError(error.detail);
+                } else {
+                    setSubmitError("Onboarding failed. Please try again");
+                }
+            } else {
+                setSubmitError("Unexpected error. Please try again")
+            }
             console.error("Onboarding failed", error)
         }finally{
             setIsSubmiting(false);
@@ -106,7 +123,10 @@ export default function OnboardingModal({ onComplete, isOpen, onClose}: Onboardi
                         >
                             {isSubmitting ? "Setting up..." : "Complete Profile"}
                             {!isSubmitting && <ArrowRight className="w-4 h-4" />}
-                        </button>                                                   
+                        </button>
+                        {submitError && (
+                            <p className="mt-2 text-sm text-red-400">{submitError}</p>
+                        )}                                           
                     </div>
                 </div>
             </div>

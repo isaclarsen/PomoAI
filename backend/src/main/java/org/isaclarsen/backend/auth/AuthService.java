@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -26,13 +27,12 @@ public class AuthService {
                     //When frontend checks user it sends empty strings, if it's an existing user we need to override these
                     updateUserValues(displayName, educationLevel, existingUser);
                     existingUser.setLastLogin(Instant.now());
-                    return userRepository.save(existingUser);
+                    return saveUserSafely(existingUser);
                 })
                 .orElseGet(() -> {
                     User newUser = new User();
                     newUser.setEmail(email);
                     newUser.setFirebaseId(firebaseID);
-                    newUser.setDisplayName(displayName);
                     newUser.setCreatedAt(Instant.now());
                     newUser.setLastLogin(Instant.now());
 
@@ -43,20 +43,21 @@ public class AuthService {
     }
 
     private void updateUserValues(String displayName, String educationLevel, User user){
-        if (displayName != null && !displayName.isEmpty()) {
-            user.setDisplayName(displayName);
-        }else{
-            user.setDisplayName(null);
+        if (displayName != null && !displayName.isBlank()) {
+            String normalized = displayName.trim();
+
+            if(checkIfDisplayNameExists(normalized, user.getUserId())){
+                throw new ResourceConflictException("Display name is already taken");
+            }
+            user.setDisplayName(normalized);
         }
 
-        if (educationLevel != null && !educationLevel.isEmpty()) {
+        if (educationLevel != null && !educationLevel.isBlank()) {
             try {
                 user.setEducationLevel(EducationLevel.valueOf(educationLevel.toUpperCase()));
             } catch (IllegalArgumentException e) {
                 user.setEducationLevel(EducationLevel.OTHER);
             }
-        } else {
-            user.setEducationLevel(null);
         }
     }
 
@@ -64,7 +65,18 @@ public class AuthService {
         try{
             return userRepository.save(user);
         }catch(DataIntegrityViolationException e){
-            throw new ResourceConflictException("User with this email or display name already found.");
+            throw new ResourceConflictException("User with this email or display name already exists");
         }
+    }
+
+    private boolean checkIfDisplayNameExists(String displayName, Long currentUserId){
+       if(displayName == null || displayName.isBlank()){
+           return false;
+       }
+
+       String normalized = displayName.trim();
+       return userRepository.findByDisplayName(normalized)
+               .map(foundUser -> !foundUser.getUserId().equals(currentUserId))
+               .orElse(false);
     }
 }

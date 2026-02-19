@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import logo from '../../../shared/assets/logo.png';
-import { useAuth } from "../../auth/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import type { User } from "../../../shared/api/types";
+
 
 interface LandingNavbarProps{
     onLoginClick: () => void;
     onDashboardClick: () => void;
+    user: User | null;
 }
 
-export function LandingNavbar({ onLoginClick, onDashboardClick } : LandingNavbarProps){
-    const {user} = useAuth();
+export function LandingNavbar({ onLoginClick, onDashboardClick, user } : LandingNavbarProps){
     const [isScrolled, setIsScrolled] = useState(false);
 
     const navigate = useNavigate();
