@@ -17,6 +17,7 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { useSession } from '../features/session/context/SessionContext';
 import { useDemo } from '../features/demo/context/DemoContext';
 import { useAuth } from '../features/auth/context/AuthContext';
+import { ProfilePage } from '../features/profile/pages/ProfilePage';
 
 function App() {
   //Get data from useAuth hook
@@ -65,7 +66,7 @@ function App() {
             onStart={demoContext.startDemoSession}
             resetOnStart={demoContext.resetDemoSession}
             onLoginClick={() => setIsLoginModalOpen(true)}
-            onDashboardClick={() => navigate('/dashboard')}
+            onLogout={logout}
             user={user}
           />
         } />
@@ -93,6 +94,17 @@ function App() {
               user={user}
               onStart={sessionContext.startSession}
               onLogout={logout}
+            />
+          ) : (
+            <Navigate to={"/"} replace />
+          )
+        } />
+
+        {/* PROFILE */}
+        <Route path='/profile' element={
+          user && user.displayName ? (
+            <ProfilePage
+              user={user}
             />
           ) : (
             <Navigate to={"/"} replace />

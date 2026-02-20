@@ -17,3 +17,17 @@
   will-change: transform;
 }
 
+/* Primary text gradient */
+@layer utilities {
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-rose-400 via-white to-indigo-400 bg-clip-text text-transparent;
+  }
+}
+
+/* Primary gradient */
+@layer utilities {
+  .gradient-primary {
+    @apply bg-gradient-to-r from-rose-400 via-white to-indigo-400;
+  }
+}
+

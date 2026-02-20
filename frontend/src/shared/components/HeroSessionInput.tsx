@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, Settings } from "lucide-react";
 
 interface HeroSessionInputProps {
     isDashboard: boolean;
     onStart: (topic: string) => void;
+    onSettingsClick?: () => void;
     resetOnStart?: () => void;
 }
 
-export function HeroSessionInput({ onStart, resetOnStart, isDashboard } : HeroSessionInputProps) {
+export function HeroSessionInput({ onStart, resetOnStart, isDashboard, onSettingsClick } : HeroSessionInputProps) {
     const [topic, setTopic] = useState('');
 
     const handleInputSubmit = () => {
@@ -43,7 +44,7 @@ export function HeroSessionInput({ onStart, resetOnStart, isDashboard } : HeroSe
         
                                 
                 {/* Själva input-boxen */}
-                <div className="relative flex items-center bg-[#0A0A0A] rounded-[14px] p-2 shadow-2xl h-full w-full">
+                <div className="relative flex items-center bg-[#000000] rounded-[14px] p-2 shadow-2xl h-full w-full">
                     <div className="pl-4 pr-3">
                         <Sparkles className="w-5 h-5 text-slate-400 group-focus-within:text-rose-400 transition-colors duration-500" />
                     </div>
@@ -51,11 +52,21 @@ export function HeroSessionInput({ onStart, resetOnStart, isDashboard } : HeroSe
                     <input
                         type="text"
                         value={topic}
-                         onChange={(e) => setTopic(e.target.value)}
+                        onChange={(e) => setTopic(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="What do you want to learn?"
-                        className="flex-1 bg-transparent border-none text-white placeholder-slate-500 focus:ring-0 text-lg h-12 outline-none font-medium"
+                        className="flex-1 bg-transparent border-none text-white placeholder-slate-400 pl-8 focus:ring-0 text-lg h-12 outline-none font-medium"
                     />
+                    {isDashboard && (
+                    <button 
+                        type="button"
+                        onClick={onSettingsClick}
+                        className="p-2.5 text-slate-400 group-focus-within:text-rose-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+                        title="Session Settings"
+                    >
+                        <Settings className="w-5 h-5" />
+                    </button>
+                    )}
         
                     {/* Start-knapp (Pilen) */}
                     <div className="flex items-center gap-2 pr-1">

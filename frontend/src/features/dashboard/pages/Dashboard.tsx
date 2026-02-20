@@ -1,7 +1,6 @@
-
 import { AppBackground } from '../../../shared/components/AppBackground';
-import { Settings } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Award, Brain, Clock, Flame, Target } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
 import { HeroSessionInput } from '../../../shared/components/HeroSessionInput';
 import type { PomoSettings, User } from '../../../shared/api/types';
 import { useUser } from '../../../domains/user/context/UserContext';
@@ -15,6 +14,23 @@ interface DashboardProps {
     onLogout: () => void;
 }
 
+type TopicStat = {
+    topic: string;
+    sessions: number;
+    focusSeconds: number;
+    accuracy: number;
+};
+
+const toUtcDayNumber = (value: Date | string) => {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return Math.floor(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / 86_400_000
+  );
+};
+
+
 function Dashboard({ user, onStart, onLogout }: DashboardProps) {
     const session = useSession();
     const { pomoSettings, savePomoSettings } = useUser();
@@ -25,7 +41,7 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
 
     useEffect(() => {
         session.fetchHistory();
-    },[])
+    }, []);
 
     const openSettingsModal = () => {
         setError("");
@@ -35,23 +51,25 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
     };
 
     const updateDraftValue = (key: keyof PomoSettings, rawValue: string) => {
-        const parsedValue = Number(rawValue);
-        if (Number.isNaN(parsedValue)) return;
+        if (rawValue.trim() === "") return;
+
+        const parsedValue = Number.parseInt(rawValue, 10);
+        if (!Number.isInteger(parsedValue)) return;
         setSettingsDraft((prev) => ({ ...prev, [key]: parsedValue }));
     };
 
     const saveSettings = async () => {
         setMessage("");
         setError("");
-        try{
-            await savePomoSettings(settingsDraft)
-            setMessage("Successfully saved Pomo Settings")
-        }catch(error){
-            setError(error instanceof Error ? error.message : "Failed to save Pomo Settings, try again")
+        try {
+            await savePomoSettings(settingsDraft);
+            setMessage("Successfully saved Pomo Settings");
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "Failed to save Pomo Settings, try again");
         }
     };
 
-    //Normalize seconds duration
+    // Normalize seconds duration
     const formatDuration = (seconds: number) => {
         const totalSeconds = Math.max(0, Math.floor(seconds));
         const hours = Math.floor(totalSeconds / 3600);
@@ -69,7 +87,7 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
         return `${mm}:${ss}`;
     };
 
-    //Normalize date
+    // Normalize date
     const formatCreatedAt = (value: Date | string) => {
         const date = value instanceof Date ? value : new Date(value);
         if (Number.isNaN(date.getTime())) return "Invalid date";
@@ -82,78 +100,250 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
 
         return `${yyyy}-${mm}-${dd} - ${hh}:${min}`;
     };
+
+    // Calculate dynamic stats from session history
+    const stats = useMemo(() => {
+        let totalSeconds = 0;
+        let correctAnswers = 0;
+        let totalQuestions = 0;
+        const topicsMap: Record<string, { sessions: number; focusSeconds: number; correct: number; questions: number }> = {};
+        const activeDays = new Set<number>();
+
+        session.history.forEach(item => {
+            totalSeconds += item.durationSeconds || 0;
+            correctAnswers += item.correctCount || 0;
+            totalQuestions += (item.correctCount || 0) + (item.wrongCount || 0);
+            
+            const cleanedTopic = item.topic?.trim();
+            if (cleanedTopic) {
+                const topicStats = topicsMap[cleanedTopic] || { sessions: 0, focusSeconds: 0, correct: 0, questions: 0 };
+                topicStats.sessions += 1;
+                topicStats.focusSeconds += item.durationSeconds || 0;
+                topicStats.correct += item.correctCount || 0;
+                topicStats.questions += (item.correctCount || 0) + (item.wrongCount || 0);
+                topicsMap[cleanedTopic] = topicStats;
+            }
+
+            const dayNumber = toUtcDayNumber(item.createdAt);
+            if (dayNumber !== null) {
+                activeDays.add(dayNumber);
+            }
+        });
+
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const formattedTime = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+        const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+        const topicStats: TopicStat[] = Object.entries(topicsMap)
+            .map(([topic, value]) => ({
+                topic,
+                sessions: value.sessions,
+                focusSeconds: value.focusSeconds,
+                accuracy: value.questions > 0 ? Math.round((value.correct / value.questions) * 100) : 0
+            }))
+            .sort((a, b) => {
+                if (b.sessions !== a.sessions) return b.sessions - a.sessions;
+                return b.focusSeconds - a.focusSeconds;
+            });
+
+        let currentStreak = 0;
+        const now = new Date();
+        let checkDayNumber = Math.floor(
+            Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 86_400_000
+        );
+
+        if (!activeDays.has(checkDayNumber)) checkDayNumber -= 1;
+
+        while (activeDays.has(checkDayNumber)) {
+            currentStreak++
+            checkDayNumber -= 1;
+        }
+
+        return {
+            formattedTime,
+            sessionsCompleted: session.history.length,
+            accuracy,
+            topicStats,
+            currentStreak
+        };
+    }, [session.history]);
         
     return(
         <div className="min-h-screen bg-[#020202] text-white relative overflow-hidden">
             <AppBackground />
-            <div className="relative z-10 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-2">
+            <div className="relative z-10 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-2 pb-24">
                 <DashboardHeader
                  user={user}
                  onLogout={onLogout}
-                 />
-                <h4 className="text-6xl font-thin">
-                    Hey, time to study?
-                </h4>
-                <main className="mt-16 grid gap-8">
-                    <section className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md shadow-[0_20px_80px_-40px_rgba(0,0,0,0.8)]">
-                        <div className="space-y-3">
-                            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-                                Time to focus?
-                            </h2>
-                            <p className="text-slate-300">
-                                Choose a topic and let AI generate questions for you after your session.
-                            </p>
+                />
+                
+                <main className="mt-16 flex flex-col items-center">
+                    {/* --- HEADER & INPUT SECTION --- */}
+                    <div className="text-center space-y-3 mb-10 w-full">
+                        <p className="text-lg md:text-xl text-neutral-400 font-extralight">
+                            hey {user.displayName} 👋
+                        </p>
+                        <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-white/90">
+                            time to <span className="font-extralight font-serif text-gradient-primary">focus.</span>
+                        </h1>
+                    </div>
+                    
+                    <div className="flex justify-center w-full mb-20">
+                        <HeroSessionInput
+                            onStart={onStart}
+                            isDashboard={true}
+                            onSettingsClick={openSettingsModal}
+                        />
+                    </div>
+
+                    {/* --- ASYMMETRIC GRID SECTION --- */}
+                    <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-12 gap-6">
+                        
+                        {/* 1. Total Focus Time */}
+                        <div className="col-span-1 md:col-span-4 lg:col-span-3 bg-white/[0.015] border border-white/[0.04] rounded-[2rem] p-8 flex flex-col hover:bg-white/[0.025] transition-colors relative overflow-hidden">
+                            <div className="flex items-center gap-3 text-neutral-500 relative z-10">
+                                <Clock className="w-5 h-5" />
+                                <span className="text-sm uppercase tracking-widest">Focus Time</span>
+                            </div>
+                            
+                            {/* Centered Stat Block */}
+                            <div className="flex-1 flex flex-col justify-center items-center text-center mt-4 relative z-10">
+                                <h3 className="text-6xl md:text-7xl font-extralight tracking-tight text-white/90">
+                                    {stats.formattedTime}
+                                </h3>
+                                <p className="text-neutral-500 mt-3 font-light text-sm">Accumulated</p>
+                            </div>
+
+                            {/* Decorative Background Watermark */}
+                            <Clock className="absolute -bottom-8 -right-8 w-48 h-48 text-white/[0.02] pointer-events-none" />
                         </div>
 
-                        <div className="mt-8 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-white">Start Session</h3>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xs uppercase tracking-widest text-slate-500">Focus mode</span>
-                                    <button
-                                        type="button"
-                                        aria-label="Open session settings"
-                                        onClick={openSettingsModal}
-                                        className="w-8 h-8 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center"
-                                    >
-                                        <Settings className="w-4 h-4" />
-                                    </button>
+                        {/* 2. Sessions History */}
+                        <div className="col-span-1 md:col-span-8 lg:col-span-6 bg-white/[0.015] border border-white/[0.04] rounded-[2rem] p-6 md:p-8 flex flex-col hover:bg-white/[0.025] transition-colors max-h-[320px]">
+                            <div className="flex items-center justify-between mb-4 shrink-0">
+                                <div className="flex items-center gap-3 text-neutral-500">
+                                    <Target className="w-5 h-5" />
+                                    <span className="text-sm uppercase tracking-widest">Sessions</span>
                                 </div>
+                                <span className="text-xs text-neutral-500 bg-white/5 px-2 py-1 rounded-full">{stats.sessionsCompleted} Total</span>
                             </div>
-                            <div className="bg-black/30 border border-white/10 rounded-2xl p-6">
-                                <HeroSessionInput onStart={onStart} isDashboard={true}/>
-                                {session.sessionError && (
-                                    <p className="text-sm text-red-400">{session.sessionError}</p>
+                            
+                            {/* Scrollable List Container */}
+                            <div className="overflow-y-auto flex-1 pr-2 space-y-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                                {session.isHistoryLoading ? (
+                                    <p className="text-neutral-500 text-sm italic">Loading history...</p>
+                                ) : session.historyError ? (
+                                    <p className="text-rose-400 text-sm">{session.historyError}</p>
+                                ) : session.history.length === 0 ? (
+                                    <p className="text-neutral-500 text-sm italic">No sessions saved yet...</p>
+                                ) : (
+                                    session.history.map((item, index) => (
+                                        <div key={`${item.topic}-${index}`} className="flex flex-col gap-2 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] transition-colors">
+                                            <div className="flex justify-between items-start gap-4">
+                                                <h4 className="text-white/90 font-medium truncate">{item.topic}</h4>
+                                                <span className="text-xs text-neutral-500 shrink-0 mt-0.5">{formatCreatedAt(item.createdAt)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-xs text-neutral-400">
+                                                <span className="bg-white/5 px-2 py-1 rounded-md">Time: {formatDuration(item.durationSeconds)}</span>
+                                                <span className={item.correctCount === (item.correctCount + item.wrongCount) ? "text-emerald-400/80" : ""}>
+                                                    {item.correctCount}/{item.correctCount + item.wrongCount} correct
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
                                 )}
                             </div>
                         </div>
-                        <section className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold">Your Sessions</h3>
-                                <span className="text-xs uppercase tracking-widest text-slate-500">History</span>
+
+                        {/* 3. Current Streak */}
+                        <div className="col-span-1 md:col-span-6 lg:col-span-3 bg-gradient-to-br from-rose-500/10 to-indigo-500/5 border border-rose-500/20 rounded-[2rem] p-8 flex flex-col hover:border-rose-500/30 transition-colors shadow-[inset_0_0_20px_rgba(244,63,94,0.02)] relative overflow-hidden">
+                            <div className="flex items-center gap-3 text-rose-300/80 relative z-10">
+                                <Flame className="w-5 h-5" />
+                                <span className="text-sm uppercase tracking-widest text-rose-300/80">Streak</span>
                             </div>
-                            <div className="mt-6 rounded-2xl border border-dashed border-white/10 p-8 text-center">
-                            {session.isHistoryLoading ? (
-                                <p>Loading history...</p>
-                            ) : session.historyError ? (
-                                <p>{session.historyError}</p>
-                            ) : session.history.length === 0 ? (
-                                <p>No sessions saved yet... </p>
+                            
+                            {/* Centered Stat Block */}
+                            <div className="flex-1 flex flex-col justify-center items-center text-center mt-4 relative z-10">
+                                <h3 className="text-6xl md:text-7xl font-light text-rose-100">
+                                    {stats.currentStreak} <span className="text-3xl text-rose-400/50">Days</span>
+                                </h3>
+                                <p className="text-rose-400/60 mt-3 font-light text-sm">Keep the momentum</p>
+                            </div>
+
+                            {/* Decorative Background Watermark */}
+                            <Flame className="absolute -bottom-6 -left-6 w-56 h-56 text-rose-500/[0.03] -rotate-12 pointer-events-none" />
+                        </div>
+
+                        {/* 4. Avg Quiz Accuracy */}
+                        <div className="col-span-1 md:col-span-6 lg:col-span-4 bg-white/[0.015] border border-white/[0.04] rounded-[2rem] p-8 flex flex-col justify-between hover:bg-white/[0.025] transition-colors">
+                            <div className="flex items-center gap-3 text-neutral-500 mb-6">
+                                <Award className="w-5 h-5" />
+                                <span className="text-sm uppercase tracking-widest">Score Accuracy</span>
+                            </div>
+                            <div className="flex items-end gap-3">
+                                <h3 className="text-5xl font-light text-white/90">{stats.accuracy}%</h3>
+                            </div>
+                            <div className="w-full bg-white/5 h-1.5 rounded-full mt-6 overflow-hidden">
+                                <div 
+                                    className="gradient-primary h-full rounded-full transition-all duration-1000 ease-out"
+                                    style={{ width: `${stats.accuracy}%` }}
+                                ></div>
+                            </div>
+                        </div>
+
+                        {/* 5. Topic Performance */}
+                        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-white/[0.015] border border-white/[0.04] rounded-[2rem] p-8 hover:bg-white/[0.025] transition-colors max-h-[320px] flex flex-col">
+                            <div className="flex items-center justify-between gap-3 mb-6 shrink-0">
+                                <div className="flex items-center gap-3 text-neutral-500">
+                                    <Brain className="w-5 h-5" />
+                                    <span className="text-sm uppercase tracking-widest">Topic Performance</span>
+                                </div>
+                                <span className="text-xs text-neutral-500 bg-white/5 px-2 py-1 rounded-full">
+                                    {stats.topicStats.length} Topics
+                                </span>
+                            </div>
+                            {stats.topicStats.length > 0 ? (
+                                <div className="overflow-y-auto flex-1 pr-2 space-y-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                                    {stats.topicStats.map((topic) => {
+                                        const maxSessions = stats.topicStats[0]?.sessions || 1;
+                                        const width = Math.max(10, Math.round((topic.sessions / maxSessions) * 100));
+
+                                        return (
+                                            <div key={topic.topic} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <p className="text-sm font-medium text-white/90 truncate">{topic.topic}</p>
+                                                    <span className="text-xs text-neutral-400 shrink-0">{topic.sessions} sessions</span>
+                                                </div>
+
+                                                <div className="w-full bg-white/5 h-1.5 rounded-full mt-3 overflow-hidden">
+                                                    <div
+                                                        className="gradient-primary h-full rounded-full transition-all duration-500"
+                                                        style={{ width: `${width}%` }}
+                                                    />
+                                                </div>
+
+                                                <div className="mt-3 flex items-center gap-2 text-xs text-neutral-400">
+                                                    <span className="bg-white/5 px-2 py-1 rounded-md">
+                                                        Focus: {formatDuration(topic.focusSeconds)}
+                                                    </span>
+                                                    <span className="bg-white/5 px-2 py-1 rounded-md">
+                                                        Accuracy: {topic.accuracy}%
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             ) : (
-                                <div>
-                                    {session.history.map((item, index) => (
-                                        <div key={`${item.topic}-${index}`} className="mt-6 rounded-2xl border border-dashed border-white/10 p-8 text-center">
-                                            <h4 className='text-xl'>{item.topic}</h4>
-                                            <p>{formatCreatedAt(item.createdAt)}</p>
-                                            <p>Duration: {formatDuration(item.durationSeconds)}</p>
-                                            <p>{item.correctCount} out of {item.correctCount + item.wrongCount} correct answers.</p>
-                                        </div>
-                                    ))}
+                                <div className="h-full flex items-center justify-start text-neutral-600 font-light italic">
+                                    Complete a session to see topic performance here.
                                 </div>
                             )}
-                            </div>
-                        </section>
-                    </section>
+                        </div>
+
+                    </div>
                 </main>
             </div>
 

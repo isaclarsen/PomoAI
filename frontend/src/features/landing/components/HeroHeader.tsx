@@ -4,14 +4,14 @@ export function HeroHeader(){
             {/* Badge */}
             <div className="mb-8 animate-fade-in-up">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                    <span className="text-xs font-bold bg-gradient-to-r from-rose-400 to-indigo-400 bg-clip-text text-transparent uppercase tracking-wider">Don't let AI make you dumb</span>
+                    <span className="text-xs font-bold text-gradient-primary uppercase tracking-wider">Don't let AI make you dumb</span>
                 </div>
             </div>
 
             {/* Title */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-center tracking-tight mb-8 max-w-5xl leading-[1.1]">
                 Master any topic with <br className="hidden md:block" />
-                <span className="inline-block bg-gradient-to-r from-rose-400 via-white to-indigo-400 bg-clip-text text-transparent pb-2">
+                <span className="inline-block text-gradient-primary pb-2">
                         PomoAI
                 </span>
             </h1>

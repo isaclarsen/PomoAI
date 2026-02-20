@@ -8,11 +8,11 @@ interface LandingPageProps {
     onStart: (topic: string) => void;
     resetOnStart: () => void;
     onLoginClick: () => void;
-    onDashboardClick: () => void;
+    onLogout: () => void;
     user: User | null;
 }
 
-function LandingPage({ onStart, resetOnStart, onLoginClick, onDashboardClick, user } : LandingPageProps) {
+function LandingPage({ onStart, resetOnStart, onLoginClick, onLogout, user } : LandingPageProps) {
     return (
         <div className="min-h-screen bg-[#020202] text-white font-sans selection:bg-rose-500/30 selection:text-rose-200 relative overflow-x-hidden">
 
@@ -22,7 +22,7 @@ function LandingPage({ onStart, resetOnStart, onLoginClick, onDashboardClick, us
             {/* NAVBAR */}
             <LandingNavbar
              onLoginClick={onLoginClick}
-             onDashboardClick={onDashboardClick}
+             onLogout={onLogout}
              user={user}
              />
 
@@ -30,15 +30,11 @@ function LandingPage({ onStart, resetOnStart, onLoginClick, onDashboardClick, us
             <main className="relative z-10 min-h-screen">
                 <div className="w-full max-w-[1600px] mx-auto min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-10 xl:px-14">
                     <HeroHeader/>
-                    {user ? (
-                        <p>Go to dashboard</p>
-                    ) : (
                         <HeroSessionInput 
                         onStart={onStart}
                         resetOnStart={resetOnStart}
                         isDashboard={false}
                         />
-                    )}
                 </div>
             </main>
 

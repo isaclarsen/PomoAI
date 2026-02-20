@@ -9,7 +9,6 @@ import org.isaclarsen.backend.user.model.PomoSettings;
 import org.isaclarsen.backend.user.model.User;
 import org.isaclarsen.backend.session.dto.*;
 import org.isaclarsen.backend.session.model.Status;
-import org.isaclarsen.backend.session.PomoSessionRepository;
 import org.isaclarsen.backend.user.UserRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,7 +107,9 @@ public class PomoSessionService {
     }
 
     public List<GetUserSessionsResponse> getUserSessionsResponse(String firebaseId){
-        List<PomoSession> pomoSessions = pomoSessionRepository.findAllByUser_FirebaseIdOrderByCreatedAtDesc(firebaseId);
+        List<PomoSession> pomoSessions = pomoSessionRepository.findAllByUser_FirebaseIdAndStatusAndCompletedAtIsNotNullOrderByCreatedAtDesc(
+                firebaseId, Status.COMPLETED
+        );
 
         return pomoSessions.stream()
                 .map(pomoSession -> new GetUserSessionsResponse(
