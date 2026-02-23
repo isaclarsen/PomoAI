@@ -54,7 +54,7 @@ public class GuestDemoService {
                 2. Format: Return ONLY raw JSON. No markdown.
                 3. JSON Structure:
                    {
-                     "topicText": "A concise, engaging summary of the topic (approx. 100-150 words). Suitable for speed-reading in 60 seconds.",
+                     "topicText": "A concise, engaging summary of the topic (approx. 100 words). Suitable for speed-reading in 60 seconds.",
                      "questions": [
                         {
                           "id": 1,
@@ -75,6 +75,7 @@ public class GuestDemoService {
                 - Safety: If the topic is inappropriate or nonsense, return a JSON with empty fields.
                 - No overlap: Options must be mutually exclusive; only one can be true.
                 - Plausible but clearly wrong distractors: 3 distractors should be close but factually incorrect; avoid “more specific” vs “less specific” traps.
+                - When referencing to "topicText" make sure to call it just "text"
                 """.formatted(topic);
 
         System.out.println("Generating topic text and questions for demo...");

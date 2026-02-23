@@ -1,4 +1,4 @@
-import type { PomoSettings } from "../../../shared/api/types";
+import type { PomoSettings, SessionMode } from "../../../shared/api/types";
 import { X } from "lucide-react";
 
 interface PomoSettingsModalProps{
@@ -6,12 +6,14 @@ interface PomoSettingsModalProps{
     onClose: () => void;
     onSave: () => void;
     onFieldChange: (key: keyof PomoSettings, rawValue: string) => void;
+    onModeChange: (value: string) => void;
+    mode: SessionMode;
     settingsDraft: PomoSettings
     error: string;
     message: string;
 }
 
-export function PomoSettingsModal({ isOpen, onClose, onSave, onFieldChange, settingsDraft, error, message} : PomoSettingsModalProps){
+export function PomoSettingsModal({ isOpen, onClose, onSave, onFieldChange, onModeChange, mode, settingsDraft, error, message} : PomoSettingsModalProps){
     if(!isOpen) return null;
     return(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -51,6 +53,7 @@ export function PomoSettingsModal({ isOpen, onClose, onSave, onFieldChange, sett
                             type="number"
                             min={3}
                             value={settingsDraft.focusMinutes}
+                            disabled={mode === "speed"}
                             onChange={(e) => onFieldChange("focusMinutes", e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                         />
@@ -62,6 +65,7 @@ export function PomoSettingsModal({ isOpen, onClose, onSave, onFieldChange, sett
                             type="number"
                             min={1}
                             value={settingsDraft.relaxMinutes}
+                            disabled={mode === "speed"}
                             onChange={(e) => onFieldChange("relaxMinutes", e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                         />
@@ -73,9 +77,22 @@ export function PomoSettingsModal({ isOpen, onClose, onSave, onFieldChange, sett
                             type="number"
                             min={1}
                             value={settingsDraft.questionCount}
+                            disabled={mode === "speed"}
                             onChange={(e) => onFieldChange("questionCount", e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                         />
+                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
+                            Study Mode
+                        </label>
+                        <select value={mode} onChange={(e) => {
+                            const raw = e.target.value;
+                            onModeChange(raw);
+                        }}
+                            className="w-full bg-white/5 border border-white/10 h-12 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                        >
+                            <option value="pomo">Pomo</option>
+                            <option value="speed">Speed</option>
+                        </select>
                     </div>
                     {error && (
                         <span className='text-sm text-red-500'>{error}</span>

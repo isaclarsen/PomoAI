@@ -63,8 +63,6 @@ function App() {
         {/* LANDING PAGE */}
         <Route path='/' element={
           <LandingPage
-            onStart={demoContext.startDemoSession}
-            resetOnStart={demoContext.resetDemoSession}
             onLoginClick={() => setIsLoginModalOpen(true)}
             onLogout={logout}
             user={user}

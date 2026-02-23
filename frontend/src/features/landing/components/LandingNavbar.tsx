@@ -49,7 +49,7 @@ export function LandingNavbar({ onLoginClick, user, onLogout } : LandingNavbarPr
                          onClick={() => {navigate('/')}}
                          />
                     </div>
-                    <span className="text-2xl font-bold tracking-tight">PomoAI</span>
+                    <span className="text-2xl font-bold text-gradient-primary  tracking-tight">PomoAI</span>
                 </div>
 
                     {/* Login Knapp */}

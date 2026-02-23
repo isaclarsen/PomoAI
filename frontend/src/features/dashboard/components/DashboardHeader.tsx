@@ -34,7 +34,7 @@ export function DashboardHeader({ user, onLogout} : DashboardHeaderProps) {
                              />
                         </div>
                         <div className="flex flex-col items-start gap-1">
-                            <span className="text-2xl font-bold tracking-tight leading-none">PomoAI</span>
+                            <span className="text-2xl text-gradient-primary font-bold tracking-tight leading-none">PomoAI</span>
                             <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-slate-400 leading-none">
                                 Dashboard
                             </span>

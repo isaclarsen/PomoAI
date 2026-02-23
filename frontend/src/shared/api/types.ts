@@ -47,6 +47,8 @@ export interface GetUserSessionsResponse{
     pomoSettings: PomoSettings;
 }
 
+export type SessionMode = "speed"| "pomo";
+
 //---------- Error types ----------
 export interface ProblemDetail {
     detail?: string;

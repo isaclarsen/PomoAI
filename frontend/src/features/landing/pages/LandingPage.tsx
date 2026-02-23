@@ -3,16 +3,16 @@ import { HeroHeader } from '../components/HeroHeader';
 import { HeroSessionInput } from '../../../shared/components/HeroSessionInput';
 import { AppBackground } from '../../../shared/components/AppBackground';
 import type { User } from '../../../shared/api/types';
+import { useDemo } from '../../demo/context/DemoContext';
 
 interface LandingPageProps {
-    onStart: (topic: string) => void;
-    resetOnStart: () => void;
     onLoginClick: () => void;
     onLogout: () => void;
     user: User | null;
 }
 
-function LandingPage({ onStart, resetOnStart, onLoginClick, onLogout, user } : LandingPageProps) {
+function LandingPage({ onLoginClick, onLogout, user } : LandingPageProps) {
+    const demoContext = useDemo();
     return (
         <div className="min-h-screen bg-[#020202] text-white font-sans selection:bg-rose-500/30 selection:text-rose-200 relative overflow-x-hidden">
 
@@ -31,8 +31,8 @@ function LandingPage({ onStart, resetOnStart, onLoginClick, onLogout, user } : L
                 <div className="w-full max-w-[1600px] mx-auto min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-10 xl:px-14">
                     <HeroHeader/>
                         <HeroSessionInput 
-                        onStart={onStart}
-                        resetOnStart={resetOnStart}
+                        onStart={demoContext.startDemoSession}
+                        resetOnStart={demoContext.resetDemoSession}
                         isDashboard={false}
                         />
                 </div>
@@ -41,7 +41,7 @@ function LandingPage({ onStart, resetOnStart, onLoginClick, onLogout, user } : L
             {/* Footer */}
             <footer className="fixed bottom-6 w-full text-center z-20 pointer-events-none">
                 <p className="text-xs text-slate-600">
-                    Press <span className="font-mono text-slate-500">Enter</span> to start a Demo Session
+                    Press <span className="font-mono text-slate-500">Enter</span> to start a Speed Session (Demo)
                 </p>
             </footer>
         </div>

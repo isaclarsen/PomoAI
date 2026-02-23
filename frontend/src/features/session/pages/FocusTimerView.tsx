@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useEffect } from 'react'
 import { CircularProgress } from '../../../shared/components/CircularProgress';
 
@@ -10,27 +10,23 @@ interface FocusTimerViewProps {
 function FocusTimerView({onTimerFinished, currentTopic} : FocusTimerViewProps){
 
         const [timeLeft, setTimeLeft] = useState(15)
+        const hasFinishedRef = useRef(false);
 
         useEffect(() => {
-            if (!timeLeft) return;
+            if(timeLeft <= 0) return;
 
-            const intervalId = setInterval(() => {
-                setTimeLeft((prevTime) => {
-                    if(prevTime <= 0){
-                        return 0
-                    }
-                    return prevTime - 1
-                })
+            const timeoutId = window.setTimeout(() => {
+                setTimeLeft((prev) => Math.max(prev - 1, 0));
             }, 1000)
 
-            return () => clearInterval(intervalId)
-        }, []);
+            return () => window.clearTimeout(timeoutId);
+
+        }, [timeLeft])
 
         useEffect(() => {
-            if(timeLeft === 0){
-                onTimerFinished();
-            }
-
+            if (timeLeft !== 0 || hasFinishedRef.current) return;
+            hasFinishedRef.current = true;
+            void onTimerFinished();
         }, [timeLeft, onTimerFinished])
 
         const formatTime = (seconds: number) => {

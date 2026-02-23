@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../../../shared/config/firebaseConfig";
 import type { QuestionDTO } from "../../../shared/api/types";
 import { startDemoSessionApi } from "../api/demoApi";
 
@@ -28,10 +27,6 @@ export function DemoProvider({ children } : { children : ReactNode }){
     const startDemoSession = async (incomingTopic: string) => {
         setTopic(incomingTopic);
         try {
-            if(auth.currentUser){
-                navigate('/dashboard')
-                return;
-            }
             navigate('/demo/text')
             const data = await startDemoSessionApi(incomingTopic);
             setTopicText(data.topicText);
@@ -50,7 +45,9 @@ export function DemoProvider({ children } : { children : ReactNode }){
         setQuestions([]);
         setTopic("")
         setTopicText("");
-        navigate('/')
+        
+        //Sends to dashboard but if not logged in it will send to landing page
+        navigate('/dashboard')
     };
 
     //All values to be sent out

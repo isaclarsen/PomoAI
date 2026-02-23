@@ -2,11 +2,12 @@ import { AppBackground } from '../../../shared/components/AppBackground';
 import { Award, Brain, Clock, Flame, Target } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { HeroSessionInput } from '../../../shared/components/HeroSessionInput';
-import type { PomoSettings, User } from '../../../shared/api/types';
+import type { PomoSettings, SessionMode, User } from '../../../shared/api/types';
 import { useUser } from '../../../domains/user/context/UserContext';
 import { useSession } from '../../session/context/SessionContext';
 import { DashboardHeader } from '../components/DashboardHeader';
 import { PomoSettingsModal } from '../components/PomoSettingsModal';
+import { useDemo } from '../../demo/context/DemoContext';
 
 interface DashboardProps {
     user: User;
@@ -31,16 +32,20 @@ const toUtcDayNumber = (value: Date | string) => {
 };
 
 
-function Dashboard({ user, onStart, onLogout }: DashboardProps) {
-    const session = useSession();
+function Dashboard({ user, onLogout }: DashboardProps) {
     const { pomoSettings, savePomoSettings } = useUser();
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settingsDraft, setSettingsDraft] = useState<PomoSettings>(pomoSettings);
+    const [sessionMode, setSessionMode] = useState<SessionMode>("pomo");
+    
+    // Context
+    const sessionContext = useSession();
+    const demoContext = useDemo();
 
     useEffect(() => {
-        session.fetchHistory();
+        sessionContext.fetchHistory();
     }, []);
 
     const openSettingsModal = () => {
@@ -101,6 +106,15 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
         return `${yyyy}-${mm}-${dd} - ${hh}:${min}`;
     };
 
+    const isSessionMode = (value: string): value is SessionMode =>
+        value === "speed" || value === "pomo";
+
+    const handleModeChange = (raw: string) => {
+        if(!isSessionMode(raw)) return;
+        setSessionMode(raw);
+        console.log(sessionMode)
+    }
+
     // Calculate dynamic stats from session history
     const stats = useMemo(() => {
         let totalSeconds = 0;
@@ -109,7 +123,7 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
         const topicsMap: Record<string, { sessions: number; focusSeconds: number; correct: number; questions: number }> = {};
         const activeDays = new Set<number>();
 
-        session.history.forEach(item => {
+        sessionContext.history.forEach(item => {
             totalSeconds += item.durationSeconds || 0;
             correctAnswers += item.correctCount || 0;
             totalQuestions += (item.correctCount || 0) + (item.wrongCount || 0);
@@ -163,12 +177,15 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
 
         return {
             formattedTime,
-            sessionsCompleted: session.history.length,
+            sessionsCompleted: sessionContext.history.length,
             accuracy,
+            correctAnswers,
+            wrongAnswers: Math.max(totalQuestions - correctAnswers, 0),
+            totalQuestions,
             topicStats,
             currentStreak
         };
-    }, [session.history]);
+    }, [sessionContext.history]);
         
     return(
         <div className="min-h-screen bg-[#020202] text-white relative overflow-hidden">
@@ -192,7 +209,7 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
                     
                     <div className="flex justify-center w-full mb-20">
                         <HeroSessionInput
-                            onStart={onStart}
+                            onStart={sessionMode === "speed" ? demoContext.startDemoSession : sessionContext.startSession}
                             isDashboard={true}
                             onSettingsClick={openSettingsModal}
                         />
@@ -201,7 +218,7 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
                     {/* --- ASYMMETRIC GRID SECTION --- */}
                     <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-12 gap-6">
                         
-                        {/* 1. Total Focus Time */}
+                        {/* Total Focus Time */}
                         <div className="col-span-1 md:col-span-4 lg:col-span-3 bg-white/[0.015] border border-white/[0.04] rounded-[2rem] p-8 flex flex-col hover:bg-white/[0.025] transition-colors relative overflow-hidden">
                             <div className="flex items-center gap-3 text-neutral-500 relative z-10">
                                 <Clock className="w-5 h-5" />
@@ -220,26 +237,26 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
                             <Clock className="absolute -bottom-8 -right-8 w-48 h-48 text-white/[0.02] pointer-events-none" />
                         </div>
 
-                        {/* 2. Sessions History */}
+                        {/* Sessions History */}
                         <div className="col-span-1 md:col-span-8 lg:col-span-6 bg-white/[0.015] border border-white/[0.04] rounded-[2rem] p-6 md:p-8 flex flex-col hover:bg-white/[0.025] transition-colors max-h-[320px]">
                             <div className="flex items-center justify-between mb-4 shrink-0">
                                 <div className="flex items-center gap-3 text-neutral-500">
                                     <Target className="w-5 h-5" />
-                                    <span className="text-sm uppercase tracking-widest">Sessions</span>
+                                    <span className="text-sm uppercase tracking-widest">Recent Sessions</span>
                                 </div>
                                 <span className="text-xs text-neutral-500 bg-white/5 px-2 py-1 rounded-full">{stats.sessionsCompleted} Total</span>
                             </div>
                             
                             {/* Scrollable List Container */}
                             <div className="overflow-y-auto flex-1 pr-2 space-y-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
-                                {session.isHistoryLoading ? (
+                                {sessionContext.isHistoryLoading ? (
                                     <p className="text-neutral-500 text-sm italic">Loading history...</p>
-                                ) : session.historyError ? (
-                                    <p className="text-rose-400 text-sm">{session.historyError}</p>
-                                ) : session.history.length === 0 ? (
+                                ) : sessionContext.historyError ? (
+                                    <p className="text-rose-400 text-sm">{sessionContext.historyError}</p>
+                                ) : sessionContext.history.length === 0 ? (
                                     <p className="text-neutral-500 text-sm italic">No sessions saved yet...</p>
                                 ) : (
-                                    session.history.map((item, index) => (
+                                    sessionContext.history.map((item, index) => (
                                         <div key={`${item.topic}-${index}`} className="flex flex-col gap-2 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] transition-colors">
                                             <div className="flex justify-between items-start gap-4">
                                                 <h4 className="text-white/90 font-medium truncate">{item.topic}</h4>
@@ -257,7 +274,7 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
                             </div>
                         </div>
 
-                        {/* 3. Current Streak */}
+                        {/* Current Streak */}
                         <div className="col-span-1 md:col-span-6 lg:col-span-3 bg-gradient-to-br from-rose-500/10 to-indigo-500/5 border border-rose-500/20 rounded-[2rem] p-8 flex flex-col hover:border-rose-500/30 transition-colors shadow-[inset_0_0_20px_rgba(244,63,94,0.02)] relative overflow-hidden">
                             <div className="flex items-center gap-3 text-rose-300/80 relative z-10">
                                 <Flame className="w-5 h-5" />
@@ -276,25 +293,39 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
                             <Flame className="absolute -bottom-6 -left-6 w-56 h-56 text-rose-500/[0.03] -rotate-12 pointer-events-none" />
                         </div>
 
-                        {/* 4. Avg Quiz Accuracy */}
+                        {/* Avg Quiz Accuracy */}
                         <div className="col-span-1 md:col-span-6 lg:col-span-4 bg-white/[0.015] border border-white/[0.04] rounded-[2rem] p-8 flex flex-col justify-between hover:bg-white/[0.025] transition-colors">
                             <div className="flex items-center gap-3 text-neutral-500 mb-6">
                                 <Award className="w-5 h-5" />
                                 <span className="text-sm uppercase tracking-widest">Score Accuracy</span>
                             </div>
                             <div className="flex items-end gap-3">
-                                <h3 className="text-5xl font-light text-white/90">{stats.accuracy}%</h3>
+                                <h3 className="text-6xl font-light text-white/90">{stats.accuracy}%</h3>
                             </div>
-                            <div className="w-full bg-white/5 h-1.5 rounded-full mt-6 overflow-hidden">
+                            <div className="w-full bg-white/5 h-1.5 rounded-full mt-4 overflow-hidden">
                                 <div 
                                     className="gradient-primary h-full rounded-full transition-all duration-1000 ease-out"
                                     style={{ width: `${stats.accuracy}%` }}
                                 ></div>
                             </div>
+                            <div className="mt-6 grid grid-cols-3 gap-2 text-xs">
+                                <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2">
+                                    <p className="text-neutral-500 uppercase tracking-wide">Correct</p>
+                                    <p className="text-emerald-300 mt-1 font-medium">{stats.correctAnswers}</p>
+                                </div>
+                                <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2">
+                                    <p className="text-neutral-500 uppercase tracking-wide">Wrong</p>
+                                    <p className="text-rose-300 mt-1 font-medium">{stats.wrongAnswers}</p>
+                                </div>
+                                <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2">
+                                    <p className="text-neutral-500 uppercase tracking-wide">Questions</p>
+                                    <p className="text-white/80 mt-1 font-medium">{stats.totalQuestions}</p>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* 5. Topic Performance */}
-                        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-white/[0.015] border border-white/[0.04] rounded-[2rem] p-8 hover:bg-white/[0.025] transition-colors max-h-[320px] flex flex-col">
+                        {/* Topic Performance */}
+                        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-white/[0.015] border border-white/[0.04] rounded-[2rem] p-8 hover:bg-white/[0.025] transition-colors max-h-[365px] flex flex-col">
                             <div className="flex items-center justify-between gap-3 mb-6 shrink-0">
                                 <div className="flex items-center gap-3 text-neutral-500">
                                     <Brain className="w-5 h-5" />
@@ -353,6 +384,8 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
                     onClose={() => setIsSettingsOpen(false)}
                     onSave={saveSettings}
                     onFieldChange={updateDraftValue}
+                    onModeChange={handleModeChange}
+                    mode={sessionMode}
                     settingsDraft={settingsDraft}
                     error={error}
                     message={message}
@@ -361,5 +394,4 @@ function Dashboard({ user, onStart, onLogout }: DashboardProps) {
         </div>
     )
 }
-
 export default Dashboard;
