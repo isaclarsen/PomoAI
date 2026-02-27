@@ -85,9 +85,14 @@ B --> E[("MySQL")]
 
 ## Demo / Visuals
 
-- [Watch PomoSession demo](docs/videos/pomosession.mp4)
-- [Watch Landing + Speed mode demo](docs/videos/landing-speedmode.mp4)
-- [Watch Dashboard demo](docs/videos/dashboard.mp4)
+### 1. PomoSession
+https://github.com/user-attachments/assets/42396fee-004d-4b9d-aa44-aab0d878d544
+
+### 2. Dashboard
+https://github.com/user-attachments/assets/23b3ed69-d5b2-4dab-bc00-9cd959cec957
+
+### 3. Landing Page (Speed Mode)
+https://github.com/user-attachments/assets/00370d5c-535d-48df-a95b-8751ad299ea2
 
 ## Getting Started (Quick Start with Docker)
 
