@@ -85,14 +85,9 @@ B --> E[("MySQL")]
 
 ## Demo / Visuals
 
-<p><b>Landing + Speed Learning (Guest)</b> – Instant summary + quiz without signup.</p>
-<video src="docs/videos/landing-speedmode.mp4" autoplay loop muted playsinline></video>
-
-<p><b>PomoSession</b> – Focus → Relax → Active recall quiz → Results.</p>
-<video src="docs/videos/pomosession.mp4" autoplay loop muted playsinline></video>
-
-<p><b>Dashboard</b> – Focus time, accuracy, streaks, topic performance.</p>
-<video src="docs/videos/dashboard.mp4" autoplay loop muted playsinline></video>
+- [Watch PomoSession demo](docs/videos/pomosession.mp4)
+- [Watch Landing + Speed mode demo](docs/videos/landing-speedmode.mp4)
+- [Watch Dashboard demo](docs/videos/dashboard.mp4)
 
 ## Getting Started (Quick Start with Docker)
 
