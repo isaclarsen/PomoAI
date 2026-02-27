@@ -87,7 +87,7 @@ export default function OnboardingModal({ onComplete, isOpen, onClose}: Onboardi
                                     value={displayName}
                                     onChange={(e) => setDisplayName(e.target.value)}
                                     placeholder="Your name..."
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 text-white text-left text-balance placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-4 text-white text-left text-balance placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                                 />
                             </div>
                             

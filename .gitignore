@@ -1,4 +1,4 @@
-# --- SÄKERHET (RÖR EJ!) ---
+# --- SECURITY  ---
 service-account.json
 src/main/resources/service-account.json
 .env
@@ -7,7 +7,7 @@ src/main/resources/service-account.json
 .env.test.local
 .env.production.local
 
-# --- BACKEND (Java/Maven) ---
+# --- BACKEND  ---
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -22,7 +22,7 @@ target/
 *.tar.gz
 *.rar
 
-# --- FRONTEND (Node/React) ---
+# --- FRONTEND  ---
 node_modules/
 dist/
 build/
@@ -31,10 +31,12 @@ yarn-debug.log*
 yarn-error.log*
 .eslintcache
 
-# --- IDE & OS (Personliga inställningar) ---
+# --- IDE & OS  ---
 .idea/
 *.iml
 .vscode/
 .DS_Store
 Thumbs.db
 AGENTS.md
+review.md
+thoughts-and-ideas.md

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useEffect } from 'react'
 import { CircularProgress } from '../../../shared/components/CircularProgress';
+import { useUser } from '../../../domains/user/context/UserContext';
 
 interface FocusTimerViewProps {
     onTimerFinished: () => void;
@@ -8,8 +9,10 @@ interface FocusTimerViewProps {
 }
 
 function FocusTimerView({onTimerFinished, currentTopic} : FocusTimerViewProps){
+    const user = useUser();
 
-        const [timeLeft, setTimeLeft] = useState(15)
+        const [totalTime] = useState(() => user.pomoSettings.focusMinutes * 60);
+        const [timeLeft, setTimeLeft] = useState(totalTime);
         const hasFinishedRef = useRef(false);
 
         useEffect(() => {
@@ -44,7 +47,7 @@ function FocusTimerView({onTimerFinished, currentTopic} : FocusTimerViewProps){
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
                     <span className="text-l text-slate-300 font-semibold uppercase tracking-wider">{currentTopic}</span>
                 </div>
-                <CircularProgress timeLeft={timeLeft} totalTime={15}>
+                <CircularProgress timeLeft={timeLeft} totalTime={totalTime}>
                     <h2 className='text-7xl md:text-8xl lg:text-9xl font-bold bg-gradient-to-r bg-clip-text from-rose-400 to-indigo-400 text-transparent tracking-tight '>{formatTime(timeLeft)}</h2>
                     <p className='text-lg md:text-xl text-slate-400 leading-relaxed font-light'>PomoAI</p>
                 </CircularProgress>

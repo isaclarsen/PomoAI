@@ -1,7 +1,8 @@
 import { toApiError } from "../../../shared/api/errors";
 import type { User } from "../../../shared/api/types";
 
-const BASE_URL = import.meta.env.VITE_API_URL_DEV || "http://localhost:8080/api/";
+const rawBaseUrl = import.meta.env.VITE_API_URL_DEV || "/api/";
+const BASE_URL = rawBaseUrl.endsWith("/") ? rawBaseUrl : `${rawBaseUrl}/`;
 
 export const syncUser = async(
     token: string,

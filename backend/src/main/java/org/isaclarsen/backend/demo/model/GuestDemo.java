@@ -34,11 +34,11 @@ public class GuestDemo {
 
     }
 
-    public Long getSessionId() {
+    public Long getDemoId() {
         return demoId;
     }
 
-    public void setSessionId(Long sessionId) {
+    public void setDemoId(Long sessionId) {
         this.demoId = sessionId;
     }
 

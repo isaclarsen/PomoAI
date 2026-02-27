@@ -121,7 +121,7 @@ export function SessionProvider({ children } : { children : ReactNode }){
         setQuestions([]);
         setSessionId(null);
         setTopic("");
-        navigate('/')
+        navigate('/dashboard')
     };
     
     const fetchHistory = async() => {

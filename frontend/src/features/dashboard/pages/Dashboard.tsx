@@ -16,7 +16,7 @@ interface DashboardProps {
 }
 
 type TopicStat = {
-    topic: string;
+    category: string;
     sessions: number;
     focusSeconds: number;
     accuracy: number;
@@ -30,6 +30,14 @@ const toUtcDayNumber = (value: Date | string) => {
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / 86_400_000
   );
 };
+
+const formatCategoryLabel = (catagory: string) =>
+    catagory
+        .toLowerCase()
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+
 
 
 function Dashboard({ user, onLogout }: DashboardProps) {
@@ -120,7 +128,7 @@ function Dashboard({ user, onLogout }: DashboardProps) {
         let totalSeconds = 0;
         let correctAnswers = 0;
         let totalQuestions = 0;
-        const topicsMap: Record<string, { sessions: number; focusSeconds: number; correct: number; questions: number }> = {};
+        const categoriesMap: Record<string, { sessions: number; focusSeconds: number; correct: number; questions: number }> = {};
         const activeDays = new Set<number>();
 
         sessionContext.history.forEach(item => {
@@ -128,15 +136,14 @@ function Dashboard({ user, onLogout }: DashboardProps) {
             correctAnswers += item.correctCount || 0;
             totalQuestions += (item.correctCount || 0) + (item.wrongCount || 0);
             
-            const cleanedTopic = item.topic?.trim();
-            if (cleanedTopic) {
-                const topicStats = topicsMap[cleanedTopic] || { sessions: 0, focusSeconds: 0, correct: 0, questions: 0 };
-                topicStats.sessions += 1;
-                topicStats.focusSeconds += item.durationSeconds || 0;
-                topicStats.correct += item.correctCount || 0;
-                topicStats.questions += (item.correctCount || 0) + (item.wrongCount || 0);
-                topicsMap[cleanedTopic] = topicStats;
-            }
+            const rawCategory = item.topicCategory?.trim();
+            const normalizedCategory = rawCategory ? rawCategory.toUpperCase() : "OTHER";
+            const categoryStats = categoriesMap[normalizedCategory] || { sessions: 0, focusSeconds: 0, correct: 0, questions: 0 };
+            categoryStats.sessions += 1;
+            categoryStats.focusSeconds += item.durationSeconds || 0;
+            categoryStats.correct += item.correctCount || 0;
+            categoryStats.questions += (item.correctCount || 0) + (item.wrongCount || 0);
+            categoriesMap[normalizedCategory] = categoryStats
 
             const dayNumber = toUtcDayNumber(item.createdAt);
             if (dayNumber !== null) {
@@ -150,9 +157,9 @@ function Dashboard({ user, onLogout }: DashboardProps) {
 
         const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
-        const topicStats: TopicStat[] = Object.entries(topicsMap)
-            .map(([topic, value]) => ({
-                topic,
+        const topicStats: TopicStat[] = Object.entries(categoriesMap)
+            .map(([category, value]) => ({
+                category,
                 sessions: value.sessions,
                 focusSeconds: value.focusSeconds,
                 accuracy: value.questions > 0 ? Math.round((value.correct / value.questions) * 100) : 0
@@ -263,7 +270,12 @@ function Dashboard({ user, onLogout }: DashboardProps) {
                                                 <span className="text-xs text-neutral-500 shrink-0 mt-0.5">{formatCreatedAt(item.createdAt)}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-xs text-neutral-400">
-                                                <span className="bg-white/5 px-2 py-1 rounded-md">Time: {formatDuration(item.durationSeconds)}</span>
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <span className="bg-white/5 px-2 py-1 rounded-md">Time: {formatDuration(item.durationSeconds)}</span>
+                                                    <span className="text-[10px] uppercase tracking-wide text-neutral-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+                                                        {formatCategoryLabel(item.topicCategory ?? "OTHER")}
+                                                    </span>
+                                                </div>
                                                 <span className={item.correctCount === (item.correctCount + item.wrongCount) ? "text-emerald-400/80" : ""}>
                                                     {item.correctCount}/{item.correctCount + item.wrongCount} correct
                                                 </span>
@@ -329,23 +341,23 @@ function Dashboard({ user, onLogout }: DashboardProps) {
                             <div className="flex items-center justify-between gap-3 mb-6 shrink-0">
                                 <div className="flex items-center gap-3 text-neutral-500">
                                     <Brain className="w-5 h-5" />
-                                    <span className="text-sm uppercase tracking-widest">Topic Performance</span>
+                                    <span className="text-sm uppercase tracking-widest">Category Performance</span>
                                 </div>
                                 <span className="text-xs text-neutral-500 bg-white/5 px-2 py-1 rounded-full">
-                                    {stats.topicStats.length} Topics
+                                    {stats.topicStats.length} Categories
                                 </span>
                             </div>
                             {stats.topicStats.length > 0 ? (
                                 <div className="overflow-y-auto flex-1 pr-2 space-y-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
-                                    {stats.topicStats.map((topic) => {
+                                    {stats.topicStats.map((categoryStat) => {
                                         const maxSessions = stats.topicStats[0]?.sessions || 1;
-                                        const width = Math.max(10, Math.round((topic.sessions / maxSessions) * 100));
+                                        const width = Math.max(10, Math.round((categoryStat.sessions / maxSessions) * 100));
 
                                         return (
-                                            <div key={topic.topic} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+                                            <div key={categoryStat.category} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
                                                 <div className="flex items-center justify-between gap-3">
-                                                    <p className="text-sm font-medium text-white/90 truncate">{topic.topic}</p>
-                                                    <span className="text-xs text-neutral-400 shrink-0">{topic.sessions} sessions</span>
+                                                    <p className="text-sm font-medium text-white/90 truncate">{formatCategoryLabel(categoryStat.category)}</p>
+                                                    <span className="text-xs text-neutral-400 shrink-0">{categoryStat.sessions} sessions</span>
                                                 </div>
 
                                                 <div className="w-full bg-white/5 h-1.5 rounded-full mt-3 overflow-hidden">
@@ -357,10 +369,10 @@ function Dashboard({ user, onLogout }: DashboardProps) {
 
                                                 <div className="mt-3 flex items-center gap-2 text-xs text-neutral-400">
                                                     <span className="bg-white/5 px-2 py-1 rounded-md">
-                                                        Focus: {formatDuration(topic.focusSeconds)}
+                                                        Focus: {formatDuration(categoryStat.focusSeconds)}
                                                     </span>
                                                     <span className="bg-white/5 px-2 py-1 rounded-md">
-                                                        Accuracy: {topic.accuracy}%
+                                                        Accuracy: {categoryStat.accuracy}%
                                                     </span>
                                                 </div>
                                             </div>
@@ -369,7 +381,7 @@ function Dashboard({ user, onLogout }: DashboardProps) {
                                 </div>
                             ) : (
                                 <div className="h-full flex items-center justify-start text-neutral-600 font-light italic">
-                                    Complete a session to see topic performance here.
+                                    Complete a session to see category performance here.
                                 </div>
                             )}
                         </div>

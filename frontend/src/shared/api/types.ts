@@ -38,9 +38,26 @@ export interface QuestionDTO{
     correctAnswer: string;
 }
 
+export type TopicCategory =
+    | "HISTORY"
+    | "SCIENCE"
+    | "TECHNOLOGY"
+    | "MATHEMATICS"
+    | "LANGUAGE"
+    | "LITERATURE"
+    | "BUSINESS"
+    | "ECONOMICS"
+    | "POLITICS"
+    | "GEOGRAPHY"
+    | "ART"
+    | "HEALTH"
+    | "OTHER";
+
+
 export interface GetUserSessionsResponse{
     topic: string;
     wrongCount: number;
+    topicCategory?: TopicCategory | null;
     correctCount: number;
     createdAt: Date;
     durationSeconds: number;

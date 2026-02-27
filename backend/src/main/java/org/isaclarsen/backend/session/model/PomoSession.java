@@ -41,9 +41,13 @@ public class PomoSession {
 
     @Column
     @Enumerated(EnumType.STRING)
+    private TopicCategory topicCategory;
+
+    @Column
+    @Enumerated(EnumType.STRING)
     private Status status;
 
-    public PomoSession(Long sessionId, User user, PomoSettings pomoSettings, Instant createdAt, Instant completedAt, String questionsJson, int correctCount, int wrongCount, String topic, Status status) {
+    public PomoSession(Long sessionId, User user, PomoSettings pomoSettings, Instant createdAt, Instant completedAt, String questionsJson, int correctCount, int wrongCount, String topic, TopicCategory topicCategory, Status status) {
         this.sessionId = sessionId;
         this.user = user;
         this.pomoSettings = pomoSettings;
@@ -53,6 +57,7 @@ public class PomoSession {
         this.correctCount = correctCount;
         this.wrongCount = wrongCount;
         this.topic = topic;
+        this.topicCategory = topicCategory;
         this.status = status;
     }
 
@@ -130,6 +135,14 @@ public class PomoSession {
 
     public void setTopic(String topic) {
         this.topic = topic;
+    }
+
+    public TopicCategory getTopicCategory() {
+        return topicCategory;
+    }
+
+    public void setTopicCategory(TopicCategory topicCategory) {
+        this.topicCategory = topicCategory;
     }
 
     public Status getStatus() {

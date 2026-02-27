@@ -15,6 +15,7 @@ interface PomoSettingsModalProps{
 
 export function PomoSettingsModal({ isOpen, onClose, onSave, onFieldChange, onModeChange, mode, settingsDraft, error, message} : PomoSettingsModalProps){
     if(!isOpen) return null;
+
     return(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div
@@ -55,7 +56,7 @@ export function PomoSettingsModal({ isOpen, onClose, onSave, onFieldChange, onMo
                             value={settingsDraft.focusMinutes}
                             disabled={mode === "speed"}
                             onChange={(e) => onFieldChange("focusMinutes", e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         />
 
                         <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
@@ -67,7 +68,7 @@ export function PomoSettingsModal({ isOpen, onClose, onSave, onFieldChange, onMo
                             value={settingsDraft.relaxMinutes}
                             disabled={mode === "speed"}
                             onChange={(e) => onFieldChange("relaxMinutes", e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         />
 
                         <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
@@ -79,21 +80,50 @@ export function PomoSettingsModal({ isOpen, onClose, onSave, onFieldChange, onMo
                             value={settingsDraft.questionCount}
                             disabled={mode === "speed"}
                             onChange={(e) => onFieldChange("questionCount", e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         />
-                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
-                            Study Mode
-                        </label>
-                        <select value={mode} onChange={(e) => {
-                            const raw = e.target.value;
-                            onModeChange(raw);
-                        }}
-                            className="w-full bg-white/5 border border-white/10 h-12 text-white text-left placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                        >
-                            <option value="pomo">Pomo</option>
-                            <option value="speed">Speed</option>
-                        </select>
+
+                        <div className="space-y-2 pt-1">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
+                                Study Mode
+                            </label>
+                            <div className="relative w-full rounded-xl border border-white/10 bg-white/[0.03] p-1">
+                                <span
+                                aria-hidden
+                                className={`pointer-events-none absolute top-1 bottom-1 left-1 w-[calc(50%-0.5rem)] rounded-lg border border-white/10 bg-white/[0.06] transition-transform duration-200 ease-out ${
+                                    mode === "speed" ? "translate-x-[calc(100%+0.5rem)]" : "translate-x-0"
+                                }`}
+                                />
+
+                                <div className="relative grid grid-cols-2 gap-1">
+                                    <button
+                                        type="button"
+                                        aria-pressed={mode === "pomo"}
+                                        onClick={() => onModeChange("pomo")}
+                                        className={`h-10 rounded-lg text-sm font-medium transition-all duration-300 ${mode === "pomo" ? "scale-105" : "text-slate-300 hover:text-white"}`}
+                                    >
+                                        <span className={mode === "pomo" ? "text-gradient-primary text-base font-extrabold" : ""}>
+                                            Pomo
+                                        </span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        aria-pressed={mode === "speed"}
+                                        onClick={() => onModeChange("speed")}
+                                        className={`h-10 rounded-lg text-sm font-medium transition-all duration-300 ${mode === "speed" ? "scale-105" : "text-slate-300 hover:text-white"}`}
+                                    >
+                                        <span className={mode === "speed" ? "text-gradient-primary text-base font-extrabold" : ""}>
+                                            Speed
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-500 ml-1">
+                                {mode === "pomo" ? "Uses your focus, relax, and question settings." : "Starts a quick demo flow with a short timer."}
+                            </p>
+                        </div>
                     </div>
+
                     {error && (
                         <span className='text-sm text-red-500'>{error}</span>
                     )}
