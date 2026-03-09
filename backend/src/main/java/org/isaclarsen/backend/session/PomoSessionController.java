@@ -37,7 +37,7 @@ public class PomoSessionController {
             @ApiResponse(responseCode = "500", description = "Internal server error.", content = @Content)
     })
     @PostMapping("/session/generate")
-    public CreateSessionResponse startUserSession(@AuthenticationPrincipal String firebaseId,
+    public CreateSessionResponse createUserSession(@AuthenticationPrincipal String firebaseId,
                                                   @RequestBody @Valid CreateSessionRequest createSessionRequest
     )
     {

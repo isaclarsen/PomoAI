@@ -37,6 +37,7 @@ yarn-error.log*
 .vscode/
 .DS_Store
 Thumbs.db
+.claude/
 AGENTS.md
 review.md
 thoughts-and-ideas.md

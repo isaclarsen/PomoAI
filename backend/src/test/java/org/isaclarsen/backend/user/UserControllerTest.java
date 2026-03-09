@@ -1,7 +1,9 @@
 package org.isaclarsen.backend.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
+import org.isaclarsen.backend.exception.ResourceNotFoundException;
 import org.isaclarsen.backend.user.dto.PomoSettingsRequest;
 import org.isaclarsen.backend.user.model.PomoSettings;
 import org.junit.jupiter.api.AfterEach;
@@ -45,19 +47,20 @@ class UserControllerTest {
         SecurityContextHolder.clearContext();
     }
 
+    private static String FIREBASE_ID = "1U";
+
     @Test
     void shouldReturnPomoSettings() throws Exception {
         //Arrange
-        String testFirebaseId = "1U";
         PomoSettings mockSettings = new PomoSettings();
         mockSettings.setFocusMinutes(25);
         mockSettings.setRelaxMinutes(5);
         mockSettings.setQuestionCount(3);
 
-        when(userService.getPomoUserSettings(testFirebaseId)).thenReturn(mockSettings);
+        when(userService.getPomoUserSettings(FIREBASE_ID)).thenReturn(mockSettings);
 
         SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(testFirebaseId, null, List.of())
+                new UsernamePasswordAuthenticationToken(FIREBASE_ID, null, List.of())
         );
 
         //Act & Assert
@@ -71,7 +74,6 @@ class UserControllerTest {
     @Test
     void shouldUpdatePomoSettings() throws Exception {
         //Arrange
-        String testFirebaseId = "1U";
         PomoSettingsRequest mockRequest = new PomoSettingsRequest(45, 10, 5);
         PomoSettings mockSettings = new PomoSettings();
         mockSettings.setFocusMinutes(45);
@@ -81,10 +83,10 @@ class UserControllerTest {
         String serializedMockRequest = objectMapper.writeValueAsString(mockRequest);
 
 
-        when(userService.updatePomoUserSettings(testFirebaseId, mockRequest)).thenReturn(mockSettings);
+        when(userService.updatePomoUserSettings(FIREBASE_ID, mockRequest)).thenReturn(mockSettings);
 
         SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(testFirebaseId, null, List.of())
+                new UsernamePasswordAuthenticationToken(FIREBASE_ID, null, List.of())
         );
 
         //Act & Assert
@@ -96,6 +98,39 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.relaxMinutes").value(10))
                 .andExpect(jsonPath("$.questionCount").value(5));
 
+
+    }
+
+    @Test
+    void shouldReturn404WhenUserNotFound() throws Exception {
+        //Arrange
+        when(userService.getPomoUserSettings(FIREBASE_ID))
+                .thenThrow(new ResourceNotFoundException("Firebase user not found."));
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(FIREBASE_ID, null, List.of())
+        );
+
+        //Act & Assert
+        mockMvc.perform(get("/api/user/pomo-settings"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn400WhenInvalidSettingsProvided() throws Exception {
+        //Arrange
+        PomoSettingsRequest invalidRequest = new PomoSettingsRequest(100, 100, 100);
+        String serialized = objectMapper.writeValueAsString(invalidRequest);
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(FIREBASE_ID, null, List.of())
+        );
+
+        //Act & Assert
+        mockMvc.perform(put("/api/user/pomo-settings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(serialized))
+                .andExpect(status().isBadRequest());
 
     }
 }
