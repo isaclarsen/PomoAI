@@ -103,6 +103,7 @@ function App() {
           user && user.displayName ? (
             <ProfilePage
               user={user}
+              onLogout={logout}
             />
           ) : (
             <Navigate to={"/"} replace />

@@ -3,24 +3,35 @@ import logo from '../../../shared/assets/logo.png';
 import { useNavigate } from "react-router-dom";
 import type { User } from '../../../shared/api/types';
 import { UserMenuButton, type UserMenuItem } from '../../../shared/components/UserMenuButton';
-import { House, LogOut, UserCog } from 'lucide-react';
+import { House, LayoutDashboard, LogOut, UserCog } from 'lucide-react';
 
 interface DashboardHeaderProps{
     user: User;
     onLogout: () => void;
+    sectionLabel?: string;
+    showDashboardItem?: boolean;
 }
 
-export function DashboardHeader({ user, onLogout} : DashboardHeaderProps) {
+export function DashboardHeader({
+    user,
+    onLogout,
+    sectionLabel = "Dashboard",
+    showDashboardItem = false
+} : DashboardHeaderProps) {
     const navigate = useNavigate();
 
-    const goToProfile = () => navigate("/profile")
-    const goToLanding = () => navigate("/")
+    const goToProfile = () => navigate("/profile");
+    const goToLanding = () => navigate("/");
+    const goToDashboard = () => navigate("/dashboard");
 
     const items: UserMenuItem[] = [
         { id: "home", label: "Home", icon: House, onClick: goToLanding },
+        ...(showDashboardItem
+            ? [{ id: "dashboard", label: "Dashboard", icon: LayoutDashboard, onClick: goToDashboard }]
+            : []),
         { id: "profile", label: "Profile", icon: UserCog, onClick: goToProfile },
         { id: "logout", label: "Log out", icon: LogOut, onClick: onLogout, danger: true }
-    ]
+    ];
     
     return (
         <header className="h-20 flex items-center justify-between gap-4">
@@ -36,7 +47,7 @@ export function DashboardHeader({ user, onLogout} : DashboardHeaderProps) {
                         <div className="flex flex-col items-start gap-1">
                             <span className="text-2xl text-gradient-primary font-bold tracking-tight leading-none">PomoAI</span>
                             <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-slate-400 leading-none">
-                                Dashboard
+                                {sectionLabel}
                             </span>
                         </div>
                     </div>
